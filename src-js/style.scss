@@ -1,3 +1,6 @@
+// DataViews is bundled (not provided by WordPress core), so its styles are too.
+@use "@wordpress/dataviews/build-style/style";
+
 .selective-entity-sync-app {
 	max-width: 1200px;
 	margin-top: 16px;
@@ -5,6 +8,41 @@
 	border: 1px solid #dcdcde;
 
 	&__panel {
-		padding: 16px 24px;
+		padding: 16px 24px 24px;
+	}
+}
+
+.selective-entity-sync-export {
+
+	&__intro {
+		margin-top: 0;
+		color: #50575e;
+	}
+
+	// DataViews expects to fill its container.
+	.dataviews-wrapper {
+		margin: 0 -24px;
+	}
+}
+
+.selective-entity-sync-export-modal {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	&__summary {
+		margin: 0;
+		font-size: 14px;
+	}
+
+	&__warnings {
+		margin: 0;
+		padding-left: 16px;
+		list-style: disc;
+	}
+
+	&__table-wrapper {
+		max-height: 50vh;
+		overflow-y: auto;
 	}
 }

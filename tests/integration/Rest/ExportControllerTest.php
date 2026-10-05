@@ -64,6 +64,8 @@ class ExportControllerTest extends RestTestCase {
 		$this->assertSame( 200, $response->get_status() );
 		$this->assertCount( 3, $data['entities'], 'Post, featured image and the default category.' );
 		$this->assertSame( 'Selected', $data['entities'][0]['title'] );
+		$this->assertSame( 'Post', $data['entities'][0]['subtype_label'] );
+		$this->assertSame( array( 'Post', 'Category', 'Media' ), wp_list_pluck( $data['entities'], 'subtype_label' ) );
 		$this->assertTrue( $data['entities'][0]['selected'] );
 		$this->assertSame( 1, $data['file_count'] );
 		$this->assertSame( filesize( get_attached_file( $attachment ) ), $data['file_bytes'] );

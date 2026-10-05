@@ -19,4 +19,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - REST API: `GET /entities`, `GET /export/options`, `POST /export/preview`, `POST /export` (zip download).
 - WP-CLI: `wp selective-entity-sync export --post_ids=… [--file=…] [--dry-run]`.
 - Export hooks: `before_export`/`after_export` actions, and filters for exportable post types, statuses and taxonomies, excluded and ID-bearing meta keys, block reference attributes, dependency inclusion, entity data and collectors.
+- Admin: Export tab (Tools → Selective Entity Sync) with a searchable, filterable content table (DataViews), bulk selection, an export preview listing dependencies, files and warnings, and package download.
 - Tooling: wp-env, PHPCS (WordPress VIP), PHPStan, PHPUnit (unit + integration), Playwright e2e, GitHub Actions CI.

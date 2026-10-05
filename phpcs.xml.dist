@@ -75,6 +75,10 @@
 	<rule ref="WordPress.WP.AlternativeFunctions">
 		<exclude-pattern>/tests/*</exclude-pattern>
 	</rule>
+	<!-- Tests occasionally write raw rows to set up edge cases the APIs can't produce. -->
+	<rule ref="WordPress.DB.DirectDatabaseQuery">
+		<exclude-pattern>/tests/*</exclude-pattern>
+	</rule>
 
 	<!-- Test files follow PHPUnit naming conventions. -->
 	<rule ref="WordPress.NamingConventions.ValidFunctionName.MethodNameInvalid">

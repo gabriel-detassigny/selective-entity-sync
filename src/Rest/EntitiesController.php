@@ -171,11 +171,25 @@ class EntitiesController extends Controller {
 			'post_type_label' => null !== $type_object ? $type_object->labels->singular_name : $post->post_type,
 			'status'          => $post->post_status,
 			'status_label'    => null !== $status_object ? (string) $status_object->label : $post->post_status,
-			'modified_gmt'    => mysql_to_rfc3339( $post->post_modified_gmt ),
+			'modified_gmt'    => mysql_to_rfc3339( $this->get_modified_gmt( $post ) ),
 			'author'          => false !== $author ? $author->display_name : '',
 			'edit_link'       => (string) get_edit_post_link( $post->ID, 'raw' ),
 			'uuid'            => $this->uuids->find( 'post', $post->ID ),
 		);
+	}
+
+	/**
+	 * Returns the GMT modification date. Some drafts have an empty GMT date, so fall back to the local one.
+	 *
+	 * @param WP_Post $post Post.
+	 * @return string MySQL datetime.
+	 */
+	private function get_modified_gmt( WP_Post $post ): string {
+		if ( '0000-00-00 00:00:00' !== $post->post_modified_gmt ) {
+			return $post->post_modified_gmt;
+		}
+
+		return get_gmt_from_date( $post->post_modified );
 	}
 
 	/**

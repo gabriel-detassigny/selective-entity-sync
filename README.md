@@ -82,7 +82,7 @@ Content that isn't in the manifest is never touched.
 
 **Tools → Selective Entity Sync** has two tabs:
 
-- **Export**: search and filter content, select entries, review dependencies, download the package.
+- **Export**: search and filter your content (by type and status), select entries, then use **Export** to review what will be included (selected items, dependencies added automatically, files and their size, warnings) and download the package.
 - **Import**: upload a package, review the preview, confirm the import, read the result report.
 
 By default only users with the `manage_options` capability can access the screen. See [`selective_entity_sync_capability`](#selective_entity_sync_capability).
@@ -425,7 +425,7 @@ What's left before the first public release. Items are ticked as they land on `m
 
 ### Admin UI
 
-- [ ] Export tab: DataViews table with search, filters and multi-select, dependency summary, download
+- [x] Export tab: DataViews table with search, filters and multi-select, dependency summary, download
 - [ ] Import tab: upload, preview table, confirmation, progress, result report
 
 ### Extensibility

@@ -29,6 +29,11 @@ updates:
     versioning-strategy: increase
     commit-message:
       prefix: chore(deps)
+    ignore:
+      # Bundled into build/ but runs against core's @wordpress/components, so it must
+      # stay on the release WordPress 6.9 ships (10.1.x). Bump with the minimum WP version.
+      - dependency-name: '@wordpress/dataviews'
+        versions: [ '>=10.2' ]
     groups:
       # Released together from the Gutenberg monorepo; update them as one PR, majors included.
       wordpress-packages:

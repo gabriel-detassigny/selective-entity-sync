@@ -4,6 +4,11 @@
 import { TabPanel } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Internal dependencies
+ */
+import ExportTab from './export/ExportTab';
+
 const TABS = [
 	{
 		name: 'export',
@@ -22,12 +27,7 @@ export default function App() {
 				{ ( tab ) => (
 					<div className="selective-entity-sync-app__panel">
 						{ 'export' === tab.name ? (
-							<p>
-								{ __(
-									'Select the content to export from this site.',
-									'selective-entity-sync'
-								) }
-							</p>
+							<ExportTab />
 						) : (
 							<p>
 								{ __(

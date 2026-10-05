@@ -47,6 +47,21 @@ class EntitiesControllerTest extends RestTestCase {
 		$this->assertNull( $item['uuid'] );
 	}
 
+	public function test_drafts_without_a_gmt_date_get_a_valid_modified_date(): void {
+		global $wpdb;
+		$this->login_as( 'administrator' );
+		$draft = self::factory()->post->create( array( 'post_status' => 'draft' ) );
+		$wpdb->update( $wpdb->posts, array( 'post_modified_gmt' => '0000-00-00 00:00:00' ), array( 'ID' => $draft ) );
+		clean_post_cache( $draft );
+
+		$items = wp_list_filter( $this->request( 'GET', '/entities', array( 'status' => 'draft' ) )->get_data(), array( 'id' => $draft ) );
+		$item  = reset( $items );
+
+		$this->assertNotFalse( strtotime( $item['modified_gmt'] ) );
+		$this->assertStringStartsNotWith( '-', $item['modified_gmt'] );
+		$this->assertStringStartsNotWith( '0000', $item['modified_gmt'] );
+	}
+
 	public function test_filters_search_and_pagination(): void {
 		$this->login_as( 'administrator' );
 		self::factory()->post->create_many( 3, array( 'post_title' => 'Alpha' ) );

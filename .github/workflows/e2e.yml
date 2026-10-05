@@ -14,8 +14,14 @@ permissions:
 
 jobs:
   e2e:
-    name: Playwright
+    name: Playwright (WP ${{ matrix.wp }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # The admin app bundles @wordpress/dataviews, which must work with the
+        # @wordpress/components that each supported WordPress version ships.
+        wp: [ '6.9', 'latest' ]
     steps:
       - uses: actions/checkout@v7
 
@@ -39,6 +45,12 @@ jobs:
 
       - run: npx playwright install chromium --with-deps
 
+      - name: Configure test environment
+        run: |
+          if [ "${{ matrix.wp }}" = "latest" ]; then CORE=null; else CORE="\"WordPress/WordPress#${{ matrix.wp }}\""; fi
+          echo "{ \"core\": ${CORE} }" > .wp-env.test.override.json
+          cat .wp-env.test.override.json
+
       - run: npm run wp-env:test start
 
       - run: npm run test:e2e
@@ -50,6 +62,6 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: failure()
         with:
-          name: playwright-artifacts
+          name: playwright-artifacts-wp-${{ matrix.wp }}
           path: artifacts/
           retention-days: 7
