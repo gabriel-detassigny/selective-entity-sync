@@ -134,6 +134,7 @@ languages/                  .pot / translations.
 
 ### Testing
 
+- `npm run makejson` must have been run for the i18n integration tests (compiled translations are gitignored).
 - Every feature ships with tests:
   - Pure logic gets unit tests (`tests/unit`, Brain Monkey).
   - Anything touching the database or WP APIs gets integration tests (`tests/integration`).

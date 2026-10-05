@@ -81,5 +81,6 @@ jobs:
 
       - name: Fail if languages/selective-entity-sync.pot is stale
         run: |
-          git diff --exit-code -I 'POT-Creation-Date' -- languages/selective-entity-sync.pot \
+          # Ignore the timestamp and source locations: only string changes matter.
+          git diff --exit-code -I 'POT-Creation-Date' -I '^#: ' -- languages/selective-entity-sync.pot \
             || { echo "::error::Translatable strings changed. Run 'npm run makepot' and commit languages/selective-entity-sync.pot."; exit 1; }

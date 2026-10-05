@@ -57,6 +57,10 @@ jobs:
 
       - run: npm ci
 
+      # Compiled translations are gitignored; the i18n tests need them.
+      - name: Compile translations
+        run: npm run makejson
+
       - name: Configure test environment
         run: |
           if [ "${{ matrix.wp }}" = "latest" ]; then CORE=null; else CORE="\"WordPress/WordPress#${{ matrix.wp }}\""; fi
