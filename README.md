@@ -665,7 +665,7 @@ What's left before the first public release. Items are ticked as they land on `m
 - [x] Round-trip tests: export, alter the target, import, assert every reference is remapped and unrelated content is untouched (integration test for all reference types, Playwright for the UI flow)
 - [x] Automated dependency updates and vulnerability alerts (Dependabot for Composer, npm and GitHub Actions; `composer audit` and `npm audit` in CI)
 - [x] Security review of all entry points (REST, uploads, WP-CLI)
-- [ ] Translation files: generate the `.pot` and the JS translation JSON, and check with a non-English locale
+- [x] Translation files: `.pot`, French translation (PHP `.mo` + JS `.json`), checked in a French admin; CI keeps the template up to date
 
 ### Release
 
@@ -694,7 +694,7 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 | PHP unit tests | `composer test:unit` |
 | PHP integration tests | `npm run test:php` |
 | End-to-end tests | `npm run test:e2e` |
-| Generate translation template | `npm run makepot` |
+| Translations | `npm run makepot`, `composer updatepo`, `npm run makejson` (see [`AGENTS.md`](AGENTS.md)) |
 
 **Accessing the dev site from another machine.** If wp-env runs on a VM or remote box, WordPress's default `localhost` URLs won't work from your own browser. Point the dev site at a hostname in the gitignored `.wp-env.override.json`, then run `npm run wp-env start -- --update`:
 

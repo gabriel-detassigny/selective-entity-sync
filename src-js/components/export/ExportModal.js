@@ -11,24 +11,6 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { downloadExport, previewExport } from '../../api';
 
 /**
- * Formats a byte count, e.g. "1.2 MB".
- *
- * @param {number} bytes Byte count.
- * @return {string} Formatted size.
- */
-function formatBytes( bytes ) {
-	const units = [ 'B', 'KB', 'MB', 'GB' ];
-	let size = bytes;
-	let unit = 0;
-	while ( size >= 1024 && unit < units.length - 1 ) {
-		size /= 1024;
-		unit++;
-	}
-
-	return `${ size.toFixed( unit === 0 ? 0 : 1 ) } ${ units[ unit ] }`;
-}
-
-/**
  * Returns how an entity is included, for display.
  *
  * @param {Object} entity Summary entity.
@@ -140,7 +122,7 @@ export default function ExportModal( { postIds, onClose } ) {
 								),
 								summary.file_count
 							),
-							formatBytes( summary.file_bytes )
+							summary.file_size
 						) }
 					</p>
 

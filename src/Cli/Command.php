@@ -244,7 +244,7 @@ class Command {
 	/**
 	 * Prints an export summary.
 	 *
-	 * @param array{entities: array<int, array<string, mixed>>, file_count: int, file_bytes: int, warnings: string[]} $summary Summary.
+	 * @param array{entities: array<int, array<string, mixed>>, file_count: int, file_bytes: int, file_size: string, warnings: string[]} $summary Summary.
 	 * @return void
 	 */
 	private function print_summary( array $summary ): void {

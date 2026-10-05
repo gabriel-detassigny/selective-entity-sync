@@ -13,6 +13,10 @@
 .phpcs-cache
 /tests/e2e/.auth/
 
+# Compiled translations (generated from languages/*.po by `npm run makejson`; built into release zips)
+/languages/*.mo
+/languages/*.json
+
 # Local environment
 .wp-env.override.json
 .wp-env.test.override.json

@@ -19,8 +19,8 @@ jobs:
           php-version: '7.4'
           coverage: none
 
-      - name: Install production PHP dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+      - name: Install PHP dependencies (with dev tools for translations)
+        run: composer install --no-interaction --prefer-dist
 
       - uses: actions/setup-node@v7
         with:
@@ -30,6 +30,12 @@ jobs:
       - run: npm ci
 
       - run: npm run build
+
+      - name: Compile translations (.mo and JavaScript .json)
+        run: npm run makejson
+
+      - name: Keep only production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
 
       - name: Check version matches tag
         run: |

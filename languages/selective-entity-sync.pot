@@ -1,0 +1,634 @@
+# Copyright (C) 2026 Gabriel de Tassigny
+# This file is distributed under the GPL-2.0-or-later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Selective Entity Sync 0.1.0-dev\n"
+"Report-Msgid-Bugs-To: https://github.com/gabriel-detassigny/selective-entity-sync/issues\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2026-10-05T14:49:24+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.12.0\n"
+"X-Domain: selective-entity-sync\n"
+
+#. Plugin Name of the plugin
+#: selective-entity-sync.php:3
+#: src/Admin/AdminPage.php:81
+#: src/Admin/AdminPage.php:82
+#: src/Admin/AdminPage.php:99
+msgid "Selective Entity Sync"
+msgstr ""
+
+#. Plugin URI of the plugin
+#: selective-entity-sync.php:4
+msgid "https://github.com/gabriel-detassigny/selective-entity-sync"
+msgstr ""
+
+#. Description of the plugin
+#: selective-entity-sync.php:5
+msgid "Push selected content (posts, pages, custom post types, terms and media) from one WordPress site to another (e.g. staging to production) using entity manifests, with automatic ID remapping, so live data is never overwritten."
+msgstr ""
+
+#. Author of the plugin
+#: selective-entity-sync.php:9
+msgid "Gabriel de Tassigny"
+msgstr ""
+
+#: selective-entity-sync.php:42
+msgid "Selective Entity Sync is missing its dependencies. Please run \"composer install\" or install a release build of the plugin."
+msgstr ""
+
+#. translators: 1: Minimum required PHP version, 2: Minimum required WordPress version.
+#: selective-entity-sync.php:46
+#, php-format
+msgid "Selective Entity Sync requires PHP %1$s and WordPress %2$s or higher. The plugin is not running."
+msgstr ""
+
+#. translators: 1: Attachment title, 2: Attachment ID.
+#: src/Export/Collectors/AttachmentCollector.php:71
+#, php-format
+msgid "The file of media \"%1$s\" (#%2$d) was not found on disk, so it was not included. It will only be linked if it already exists on the target site."
+msgstr ""
+
+#. translators: 1: Entity type and ID, e.g. "post #12". 2: Missing entity type and ID, e.g. "post #34".
+#: src/Export/ExportContext.php:113
+#, php-format
+msgid "%1$s references %2$s, which no longer exists. The reference will not be remapped."
+msgstr ""
+
+#. translators: 1: "post" or "term", 2: ID.
+#: src/Export/ExportContext.php:206
+#, php-format
+msgid "%1$s #%2$d"
+msgstr ""
+
+#: src/Export/ExportContext.php:207
+msgid "term"
+msgstr ""
+
+#: src/Export/ExportContext.php:207
+msgid "post"
+msgstr ""
+
+#. translators: %s: Entity type and ID, e.g. "post #12".
+#: src/Export/Exporter.php:207
+#, php-format
+msgid "%s cannot be exported: no exporter supports it."
+msgstr ""
+
+#: src/Export/Exporter.php:320
+msgid "Select at least one item to export."
+msgstr ""
+
+#. translators: %d: Maximum number of items.
+#: src/Export/Exporter.php:327
+#, php-format
+msgid "You can export at most %d items at once."
+msgstr ""
+
+#. translators: %d: Post ID.
+#: src/Export/Exporter.php:343
+#, php-format
+msgid "Item #%d cannot be exported: it does not exist, its type or status is not exportable, or you are not allowed to export it."
+msgstr ""
+
+#: src/Export/ExportPlan.php:106
+#: src/Import/ImportPlanner.php:275
+msgid "Media"
+msgstr ""
+
+#. translators: %s: File name.
+#: src/Import/Handlers/AttachmentHandler.php:92
+#, php-format
+msgid "The file type of \"%s\" is not allowed on this site."
+msgstr ""
+
+#. translators: %s: Media title.
+#: src/Import/Handlers/AttachmentHandler.php:159
+#, php-format
+msgid "You are not allowed to upload or edit the media \"%s\"."
+msgstr ""
+
+#. translators: %s: File name.
+#: src/Import/Handlers/AttachmentHandler.php:294
+#, php-format
+msgid "The file \"%s\" could not be copied for import."
+msgstr ""
+
+#. translators: 1: File name, 2: Error message.
+#: src/Import/Handlers/AttachmentHandler.php:318
+#, php-format
+msgid "The file \"%1$s\" could not be imported: %2$s"
+msgstr ""
+
+#: src/Import/Handlers/AttachmentHandler.php:320
+#: src/Import/PackageStore.php:117
+msgid "unknown error"
+msgstr ""
+
+#. translators: 1: Media title, 2: Error message.
+#: src/Import/Handlers/AttachmentHandler.php:396
+#, php-format
+msgid "The media \"%1$s\" could not be saved: %2$s"
+msgstr ""
+
+#. translators: %s: Post type name.
+#: src/Import/Handlers/PostHandler.php:112
+#, php-format
+msgid "The post type \"%s\" is not registered on this site."
+msgstr ""
+
+#. translators: %s: Post type name.
+#: src/Import/Handlers/PostHandler.php:121
+#, php-format
+msgid "Content of type \"%s\" cannot be imported on this site."
+msgstr ""
+
+#. translators: %s: Post title.
+#: src/Import/Handlers/PostHandler.php:222
+#, php-format
+msgid "You are not allowed to create or edit \"%s\"."
+msgstr ""
+
+#. translators: 1: Post title, 2: Error message.
+#: src/Import/Handlers/PostHandler.php:240
+#, php-format
+msgid "\"%1$s\" could not be saved: %2$s"
+msgstr ""
+
+#. translators: %s: Taxonomy name.
+#: src/Import/Handlers/TermHandler.php:71
+#, php-format
+msgid "The taxonomy \"%s\" is not registered on this site."
+msgstr ""
+
+#. translators: %s: Term name.
+#: src/Import/Handlers/TermHandler.php:114
+#, php-format
+msgid "You are not allowed to create or edit the term \"%s\"."
+msgstr ""
+
+#. translators: 1: Term name, 2: Error message.
+#: src/Import/Handlers/TermHandler.php:131
+#, php-format
+msgid "The term \"%1$s\" could not be saved: %2$s"
+msgstr ""
+
+#: src/Import/Importer.php:162
+msgid "Not found on this site: references to it will not be remapped."
+msgstr ""
+
+#: src/Import/Importer.php:165
+msgid "Deselected."
+msgstr ""
+
+#. translators: %s: Entity type.
+#: src/Import/ImportPlanner.php:145
+#, php-format
+msgid "Entities of type \"%s\" cannot be imported on this site."
+msgstr ""
+
+#: src/Import/ImportPlanner.php:187
+msgid "Skipped by a site customization."
+msgstr ""
+
+#: src/Import/PackageStore.php:59
+msgid "The package could not be copied."
+msgstr ""
+
+#. translators: %s: Upload error message.
+#: src/Import/PackageStore.php:116
+#, php-format
+msgid "The package could not be uploaded: %s"
+msgstr ""
+
+#: src/Import/PackageStore.php:225
+msgid "The package storage directory could not be created."
+msgstr ""
+
+#: src/Manifest/Manifest.php:101
+msgid "Cannot add an entity without a valid UUID, type, source ID and data."
+msgstr ""
+
+#. translators: %s: Entity UUID.
+#: src/Manifest/Manifest.php:109
+#, php-format
+msgid "The entity %s is already in the manifest."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Manifest/Manifest.php:162
+#: src/Package/PackageWriter.php:68
+#, php-format
+msgid "The file path \"%s\" is not allowed in a package."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Manifest/Manifest.php:171
+#, php-format
+msgid "The file %s is already in the manifest."
+msgstr ""
+
+#: src/Manifest/ManifestCodec.php:49
+msgid "The manifest could not be encoded as JSON."
+msgstr ""
+
+#. translators: %s: JSON parser error message.
+#: src/Manifest/ManifestCodec.php:69
+#, php-format
+msgid "The manifest is not valid JSON: %s"
+msgstr ""
+
+#: src/Manifest/ManifestCodec.php:78
+msgid "The manifest must be a JSON object."
+msgstr ""
+
+#: src/Manifest/Schema.php:63
+msgid "The manifest has no valid schema version."
+msgstr ""
+
+#. translators: 1: Manifest schema version, 2: Highest schema version supported by this site.
+#: src/Manifest/Schema.php:70
+#, php-format
+msgid "This package uses manifest format %1$d, but this site only supports up to format %2$d. Please update Selective Entity Sync on this site."
+msgstr ""
+
+#. translators: %s: Entity UUID.
+#: src/Manifest/Schema.php:139
+#, php-format
+msgid "The manifest contains the entity %s more than once."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Manifest/Schema.php:181
+#, php-format
+msgid "The manifest lists the file %s more than once."
+msgstr ""
+
+#. translators: %s: Manifest field path, e.g. "entities[2].uuid".
+#: src/Manifest/Schema.php:210
+#, php-format
+msgid "The manifest is invalid: \"%s\" is missing or malformed."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/Package.php:72
+#, php-format
+msgid "The file %s is not part of this package."
+msgstr ""
+
+#: src/Package/PackageReader.php:115
+msgid "The PHP zip extension is required to read packages."
+msgstr ""
+
+#: src/Package/PackageReader.php:119
+msgid "The package file could not be read."
+msgstr ""
+
+#. translators: %s: Maximum package size, e.g. "512 MB".
+#: src/Package/PackageReader.php:126
+#, php-format
+msgid "The package is larger than the maximum allowed size of %s."
+msgstr ""
+
+#: src/Package/PackageReader.php:134
+msgid "The file is not a valid package (zip) file."
+msgstr ""
+
+#: src/Package/PackageReader.php:139
+msgid "The package contains too many files."
+msgstr ""
+
+#: src/Package/PackageReader.php:156
+msgid "The package does not contain a manifest.json file."
+msgstr ""
+
+#: src/Package/PackageReader.php:160
+msgid "The package manifest is too large."
+msgstr ""
+
+#: src/Package/PackageReader.php:165
+msgid "The package manifest could not be read."
+msgstr ""
+
+#: src/Package/PackageReader.php:191
+msgid "The package could not be read."
+msgstr ""
+
+#. translators: %s: Entry name inside the zip file.
+#: src/Package/PackageReader.php:210
+#, php-format
+msgid "The package contains an unexpected file: %s"
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/PackageReader.php:220
+#, php-format
+msgid "The size of %s does not match the manifest."
+msgstr ""
+
+#: src/Package/PackageReader.php:228
+msgid "The package contents are larger than the maximum allowed size."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/PackageReader.php:240
+#, php-format
+msgid "The package is missing the file %s."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/PackageReader.php:262
+#, php-format
+msgid "The package contains a file type that is not allowed: %s"
+msgstr ""
+
+#: src/Package/PackageReader.php:285
+msgid "The package could not be extracted: the working directory is not writable."
+msgstr ""
+
+#: src/Package/PackageReader.php:290
+msgid "The package could not be extracted."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/PackageReader.php:309
+#, php-format
+msgid "The file %s is corrupted: its checksum does not match the manifest."
+msgstr ""
+
+#. translators: %s: File path inside the package.
+#: src/Package/PackageWriter.php:77
+#, php-format
+msgid "The file for %s could not be read."
+msgstr ""
+
+#: src/Package/PackageWriter.php:124
+msgid "The package file could not be created."
+msgstr ""
+
+#: src/Package/PackageWriter.php:133
+msgid "The package file could not be written."
+msgstr ""
+
+#: src/Package/PackageWriter.php:145
+msgid "The PHP zip extension is required to create packages."
+msgstr ""
+
+#: src/Rest/Controller.php:63
+msgid "Sorry, you are not allowed to sync content."
+msgstr ""
+
+#. translators: %s: Parameter name.
+#: src/Rest/EntitiesController.php:206
+#, php-format
+msgid "Invalid parameter: %s"
+msgstr ""
+
+#: src/Rest/ImportController.php:139
+msgid "Please choose a package file to upload."
+msgstr ""
+
+#: src/Rest/ImportController.php:251
+msgid "This package was not found. It may have expired: please upload it again."
+msgstr ""
+
+#: src/Storage/TempStorage.php:74
+msgid "A temporary working directory could not be created."
+msgstr ""
+
+#. translators: %s: field label
+#: build/index.js:115
+msgid "Reference only"
+msgstr ""
+
+#: build/index.js:115
+msgid "Selected"
+msgstr ""
+
+#: build/index.js:115
+msgid "Dependency"
+msgstr ""
+
+#. translators: %s: File name.
+#: build/index.js:116
+#, js-format
+msgid "Package downloaded: %s. Import it on the target site."
+msgstr ""
+
+#. translators: 1: Number of selected items, 2: Number of dependencies, 3: Number of files, 4: Total file size.
+#: build/index.js:117
+#, js-format
+msgid "%1$s, %2$s, %3$s (%4$s)."
+msgstr ""
+
+#. translators: %d: Number of items.
+#: build/index.js:118
+#, js-format
+msgid "%d selected item"
+msgid_plural "%d selected items"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of dependencies.
+#: build/index.js:119
+#, js-format
+msgid "%d dependency"
+msgid_plural "%d dependencies"
+msgstr[0] ""
+msgstr[1] ""
+
+#. translators: %d: Number of files.
+#: build/index.js:120
+#, js-format
+msgid "%d file"
+msgid_plural "%d files"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/index.js:120
+#: build/index.js:121
+#: build/index.js:122
+msgid "Title"
+msgstr ""
+
+#: build/index.js:120
+#: build/index.js:121
+#: build/index.js:122
+msgid "Type"
+msgstr ""
+
+#: build/index.js:120
+msgid "Included as"
+msgstr ""
+
+#: build/index.js:120
+#: build/index.js:121
+#: build/index.js:122
+msgid "(no title)"
+msgstr ""
+
+#: build/index.js:120
+msgid "Close"
+msgstr ""
+
+#: build/index.js:120
+#: build/index.js:123
+msgid "Cancel"
+msgstr ""
+
+#: build/index.js:120
+msgid "The export failed. Please try again."
+msgstr ""
+
+#: build/index.js:120
+msgid "Download package"
+msgstr ""
+
+#: build/index.js:120
+msgid "Status"
+msgstr ""
+
+#: build/index.js:120
+msgid "Author"
+msgstr ""
+
+#: build/index.js:120
+msgid "Last modified"
+msgstr ""
+
+#: build/index.js:120
+#: build/index.js:124
+msgid "Export"
+msgstr ""
+
+#: build/index.js:120
+msgid "Export content"
+msgstr ""
+
+#: build/index.js:120
+msgid "Select the content to export. Parent pages, terms, featured images and media used in the content are added automatically."
+msgstr ""
+
+#: build/index.js:120
+msgid "Search content"
+msgstr ""
+
+#. translators: 1: Created count, 2: Updated count, 3: Skipped count, 4: Failed count.
+#: build/index.js:121
+#, js-format
+msgid "Import finished: %1$d created, %2$d updated, %3$d skipped, %4$d failed."
+msgstr ""
+
+#: build/index.js:121
+msgid "Result"
+msgstr ""
+
+#: build/index.js:121
+#: build/index.js:122
+msgid "Details"
+msgstr ""
+
+#: build/index.js:121
+msgid "Created"
+msgstr ""
+
+#: build/index.js:121
+msgid "Updated"
+msgstr ""
+
+#: build/index.js:121
+msgid "Skipped"
+msgstr ""
+
+#: build/index.js:121
+msgid "Linked"
+msgstr ""
+
+#: build/index.js:121
+#: build/index.js:123
+msgid "Missing"
+msgstr ""
+
+#: build/index.js:121
+msgid "Failed"
+msgstr ""
+
+#: build/index.js:121
+msgid "Import another package"
+msgstr ""
+
+#: build/index.js:121
+msgid "Upload a package exported from another site. You will see what will be created or updated before anything is changed."
+msgstr ""
+
+#: build/index.js:121
+msgid "Choose package…"
+msgstr ""
+
+#. translators: 1: File name, 2: Source site URL, 3: Export date.
+#: build/index.js:122
+#, js-format
+msgid "%1$s, exported from %2$s on %3$s."
+msgstr ""
+
+#: build/index.js:122
+msgid "Select all"
+msgstr ""
+
+#: build/index.js:122
+msgid "Action"
+msgstr ""
+
+#. translators: %s: Item title.
+#: build/index.js:123
+#, js-format
+msgid "Import %s"
+msgstr ""
+
+#: build/index.js:123
+msgid "Create"
+msgstr ""
+
+#: build/index.js:123
+msgid "Update"
+msgstr ""
+
+#: build/index.js:123
+msgid "Skip"
+msgstr ""
+
+#: build/index.js:123
+msgid "Link to existing"
+msgstr ""
+
+#: build/index.js:123
+msgid "Previously synced"
+msgstr ""
+
+#: build/index.js:123
+msgid "Same slug"
+msgstr ""
+
+#: build/index.js:123
+msgid "Same file"
+msgstr ""
+
+#: build/index.js:123
+msgid "Matched by customization"
+msgstr ""
+
+#. translators: %d: Number of items.
+#: build/index.js:124
+#, js-format
+msgid "Import %d item"
+msgid_plural "Import %d items"
+msgstr[0] ""
+msgstr[1] ""
+
+#: build/index.js:124
+msgid "Import"
+msgstr ""

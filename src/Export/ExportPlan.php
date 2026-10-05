@@ -118,7 +118,7 @@ class ExportPlan {
 	/**
 	 * Returns a summary for display: one row per entity, plus file totals.
 	 *
-	 * @return array{entities: array<int, array{uuid: string, type: string, subtype: string, subtype_label: string, title: string, source_id: int, selected: bool, reference_only: bool}>, file_count: int, file_bytes: int, warnings: string[]}
+	 * @return array{entities: array<int, array{uuid: string, type: string, subtype: string, subtype_label: string, title: string, source_id: int, selected: bool, reference_only: bool}>, file_count: int, file_bytes: int, file_size: string, warnings: string[]}
 	 */
 	public function get_summary(): array {
 		$entities = array();
@@ -146,6 +146,7 @@ class ExportPlan {
 			'entities'   => $entities,
 			'file_count' => count( $this->files ),
 			'file_bytes' => $bytes,
+			'file_size'  => (string) size_format( $bytes ),
 			'warnings'   => $this->warnings,
 		);
 	}

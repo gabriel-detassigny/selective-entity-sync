@@ -34,8 +34,8 @@
     "test:php": "wp-env --config=.wp-env.test.json run cli --env-cwd=wp-content/plugins/selective-entity-sync vendor/bin/phpunit -c phpunit.xml.dist",
     "test:e2e": "wp-scripts test-playwright",
     "test:e2e:debug": "wp-scripts test-playwright --debug",
-    "makepot": "wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-pot . languages/selective-entity-sync.pot --exclude=node_modules,vendor,build,tests,src-js --domain=selective-entity-sync && wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-pot src-js languages/selective-entity-sync-js.pot --domain=selective-entity-sync --skip-php --merge=languages/selective-entity-sync.pot --subtract-and-merge",
-    "makejson": "wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-json languages --no-purge",
+    "makepot": "npm run build && composer makepot",
+    "makejson": "composer makemo && composer makejson",
     "plugin-zip": "wp-scripts plugin-zip"
   },
   "devDependencies": {

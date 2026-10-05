@@ -33,7 +33,7 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 | PHP integration tests (test site) | `npm run test:php` |
 | E2E tests (Playwright, test site) | `npm run test:e2e` |
 | WP-CLI | `npm run wp-env run cli wp <command>` (dev) / `npm run wp-env:test run cli wp <command>` (test) |
-| Regenerate translations | `npm run makepot` then `npm run makejson` |
+| Translations | `npm run makepot` (template) → `composer updatepo` (merge into `.po`) → translate → `npm run makejson` (`.mo` + JS `.json`) |
 | Release zip | `composer install --no-dev -o && npm run build && npm run plugin-zip` |
 
 ### Environments
@@ -121,6 +121,8 @@ languages/                  .pot / translations.
 - PHP: `__()`, `esc_html__()`, `esc_html_e()`, `_n()`, `sprintf()` with numbered placeholders, and a `/* translators: */` comment for every placeholder.
 - JS: `@wordpress/i18n` (`__`, `_n`, `sprintf`). Script translations are wired with `wp_set_script_translations()`.
 - Never concatenate translated fragments into sentences.
+- After changing user-facing strings, run `npm run makepot` and commit `languages/selective-entity-sync.pot` (CI fails if it is stale). Then run `composer updatepo` and update `languages/*.po` (French is maintained in-repo), and run `npm run makejson`.
+- JS translations are looked up by the hash of `build/index.js`, which is why `makepot` scans `build/`, not `src-js/`. Strings used only in JS go to the `.json` files, not the `.mo`.
 
 ### Hooks (extensibility)
 

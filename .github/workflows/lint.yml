@@ -56,3 +56,30 @@ jobs:
       # Only `dependencies` ship in build/; dev tooling vulnerabilities are reported by Dependabot alerts.
       - name: npm audit (shipped dependencies)
         run: npm audit --omit=dev --audit-level=high
+
+  i18n:
+    name: Translation template up to date
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - uses: ramsey/composer-install@v4
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run makepot
+
+      - name: Fail if languages/selective-entity-sync.pot is stale
+        run: |
+          git diff --exit-code -I 'POT-Creation-Date' -- languages/selective-entity-sync.pot \
+            || { echo "::error::Translatable strings changed. Run 'npm run makepot' and commit languages/selective-entity-sync.pot."; exit 1; }
