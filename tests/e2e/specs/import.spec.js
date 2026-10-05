@@ -166,6 +166,49 @@ test.describe( 'Import', () => {
 		expect( kept.title.raw ).toBe( 'Keep this title' );
 	} );
 
+	test( 'imports large packages in batches with progress', async ( {
+		page,
+		requestUtils,
+	} ) => {
+		const file = await exportPage( page, 'E2E Import Child' );
+		await requestUtils.rest( {
+			path: `/wp/v2/pages/${ child.id }`,
+			method: 'POST',
+			data: { title: 'Changed before batched import' },
+		} );
+
+		// Test-site mu-plugin: one entity per request.
+		await page.setExtraHTTPHeaders( { 'X-SES-Batch-Size': '1' } );
+		const batchRequests = [];
+		page.on( 'request', ( request ) => {
+			// Decoded: with plain permalinks the route is in an encoded ?rest_route= parameter.
+			if (
+				decodeURIComponent( request.url() ).includes( '/import/next' )
+			) {
+				batchRequests.push( request.url() );
+			}
+		} );
+
+		await page.getByRole( 'tab', { name: 'Import' } ).click();
+		await page.locator( 'input[type="file"]' ).setInputFiles( file );
+		await page.getByRole( 'button', { name: 'Import 2 items' } ).click();
+
+		await expect(
+			page
+				.locator( '.components-notice' )
+				.getByText(
+					'Import finished: 0 created, 2 updated, 0 skipped, 0 failed.'
+				)
+		).toBeVisible();
+		expect( batchRequests.length ).toBeGreaterThanOrEqual( 1 );
+
+		const restored = await requestUtils.rest( {
+			path: `/wp/v2/pages/${ child.id }`,
+			params: { context: 'edit' },
+		} );
+		expect( restored.title.raw ).toBe( 'E2E Import Child' );
+	} );
+
 	test( 'rejects files that are not packages', async ( { page } ) => {
 		await page.getByRole( 'tab', { name: 'Import' } ).click();
 		await page.locator( 'input[type="file"]' ).setInputFiles( {

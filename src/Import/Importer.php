@@ -17,6 +17,9 @@ use Throwable;
 /**
  * Imports an extracted package.
  *
+ * An import can run in one go (import()) or in batches across requests
+ * (start(), then run() with limits until the job is done).
+ *
  * 1. Plan: match every entity to a local object (see ImportPlanner).
  * 2. Record the local IDs of all matched entities, so references to them
  *    resolve immediately.
@@ -65,13 +68,28 @@ class Importer {
 	}
 
 	/**
-	 * Imports a package.
+	 * Imports a package in one go (used by WP-CLI and tests).
 	 *
-	 * @param Package  $package    Extracted, validated package.
+	 * @param Package  $package    Validated package.
 	 * @param string[] $skip_uuids UUIDs of entities not to write (deselected by the user).
 	 * @return ImportReport
 	 */
 	public function import( Package $package, array $skip_uuids = array() ): ImportReport {
+		$job = $this->start( $package, $skip_uuids );
+		$this->run( $job, $package );
+
+		return $job->get_report();
+	}
+
+	/**
+	 * Starts an import: plans it, maps matched entities, records the entities
+	 * that won't be written and decides the write order. Nothing is written yet.
+	 *
+	 * @param Package  $package    Validated package.
+	 * @param string[] $skip_uuids UUIDs of entities not to write (deselected by the user).
+	 * @return ImportJob
+	 */
+	public function start( Package $package, array $skip_uuids = array() ): ImportJob {
 		$manifest = $package->get_manifest();
 
 		/**
@@ -106,20 +124,88 @@ class Importer {
 
 		$context->set_pending( array_keys( $to_write ) );
 
-		$written = array();
-		foreach ( $this->sort( $to_write, $manifest, $handlers, $context ) as $uuid ) {
-			if ( $this->write( $to_write[ $uuid ], $manifest, $handlers, $context, $report ) ) {
-				$written[] = $uuid;
-			}
-		}
+		$job = new ImportJob( $to_write, $this->sort( $to_write, $manifest, $handlers, $context ), $report );
+		$job->set_context_state( $context->get_state() );
 
-		foreach ( $written as $uuid ) {
-			if ( $context->needs_fixup( $uuid ) ) {
+		return $job;
+	}
+
+	/**
+	 * Runs (part of) an import job.
+	 *
+	 * Without limits, runs the job to completion. With limits, stops after the
+	 * given number of entities or seconds (at least one entity is processed),
+	 * so the job can continue in another request.
+	 *
+	 * @param ImportJob                                       $job     Job from start(), possibly restored.
+	 * @param Package                                         $package Validated package.
+	 * @param array{max_entities: int, max_seconds: int}|null $limits  Batch limits, or null for none.
+	 * @return ImportJob The same job, advanced.
+	 */
+	public function run( ImportJob $job, Package $package, ?array $limits = null ): ImportJob {
+		$manifest  = $package->get_manifest();
+		$handlers  = $this->planner->get_handlers();
+		$context   = new ImportContext( $manifest, $package );
+		$started   = microtime( true );
+		$processed = 0;
+
+		$context->restore_state( $job->get_context_state() );
+
+		while ( ! $job->is_done() ) {
+			if ( null !== $limits && $processed > 0 && ( $processed >= $limits['max_entities'] || microtime( true ) - $started >= $limits['max_seconds'] ) ) {
+				break;
+			}
+
+			if ( ImportJob::PHASE_WRITE === $job->get_phase() ) {
+				$order = $job->get_order();
+				if ( $job->get_position() >= count( $order ) ) {
+					$job->set_phase( ImportJob::PHASE_FIXUP );
+					continue;
+				}
+
+				$uuid = $order[ $job->get_position() ];
+				$item = $job->get_item( $uuid );
+				if ( null !== $item && $this->write( $item, $manifest, $handlers, $context, $job->get_report() ) ) {
+					$job->mark_written( $uuid );
+				}
+				$job->advance();
+				++$processed;
+				continue;
+			}
+
+			// Fixup phase: write again entities that referenced something written after them.
+			$written = $job->get_written();
+			if ( $job->get_position() >= count( $written ) ) {
+				$this->finish( $job, $context, $manifest );
+				break;
+			}
+
+			$uuid = $written[ $job->get_position() ];
+			$item = $job->get_item( $uuid );
+			if ( null !== $item && $context->needs_fixup( $uuid ) ) {
 				$context->clear_fixup( $uuid );
-				$this->write( $to_write[ $uuid ], $manifest, $handlers, $context, $report, true );
+				$this->write( $item, $manifest, $handlers, $context, $job->get_report(), true );
+				++$processed;
 			}
+			$job->advance();
 		}
 
+		$job->set_context_state( $context->get_state() );
+
+		return $job;
+	}
+
+	/**
+	 * Completes a job: collects warnings and fires the after-import action.
+	 *
+	 * @param ImportJob     $job      Job.
+	 * @param ImportContext $context  Import context.
+	 * @param Manifest      $manifest Manifest.
+	 * @return void
+	 */
+	private function finish( ImportJob $job, ImportContext $context, Manifest $manifest ): void {
+		$job->set_phase( ImportJob::PHASE_DONE );
+		$report = $job->get_report();
 		$report->add_warnings( $context->get_warnings() );
 
 		/**
@@ -131,8 +217,6 @@ class Importer {
 		 * @param Manifest     $manifest The imported manifest.
 		 */
 		do_action( 'selective_entity_sync_after_import', $report, $manifest );
-
-		return $report;
 	}
 
 	/**

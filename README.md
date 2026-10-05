@@ -66,7 +66,7 @@ Content that isn't in the manifest is never touched.
 - **Content with the same slug is treated as the same item** when it has never been synced (see [`selective_entity_sync_match_existing_entity`](#selective_entity_sync_match_existing_entity) to disable this).
 - **Links to other pages** are rewritten from the source domain to the target domain, but not remapped to different slugs.
 - **Users, comments, orders and other non-content data are intentionally never synced.**
-- Very large packages may hit PHP upload, memory or time limits: imports run in a single request. Use WP-CLI for big imports.
+- Imports from the admin run in batches (see [`selective_entity_sync_import_batch_limits`](#selective_entity_sync_import_batch_limits)), but the package must still fit PHP's upload limit (`upload_max_filesize`, `post_max_size`). For very large packages, use WP-CLI.
 - The Export table's selection applies to the current page of results (use up to 100 items per page).
 
 ## Security
@@ -111,7 +111,7 @@ Found a vulnerability? Please report it privately to the maintainer rather than 
 **Tools → Selective Entity Sync** has two tabs:
 
 - **Export**: search and filter your content (by type and status), select entries, then use **Export** to review what will be included (selected items, dependencies added automatically, files and their size, warnings) and download the package.
-- **Import**: upload a package and review the preview: each item is marked **Create** or **Update** (with how it was matched, e.g. "Previously synced" or "Same slug"), and you can untick anything you don't want to change. Then import and read the result report, with links to every imported item.
+- **Import** (large packages are processed in batches, with a progress bar): upload a package and review the preview: each item is marked **Create** or **Update** (with how it was matched, e.g. "Previously synced" or "Same slug"), and you can untick anything you don't want to change. Then import and read the result report, with links to every imported item.
 
 By default only users with the `manage_options` capability can access the screen. See [`selective_entity_sync_capability`](#selective_entity_sync_capability).
 
@@ -148,7 +148,8 @@ All routes live under `/wp-json/selective-entity-sync/v1` and need the capabilit
 | `POST /export` | `{ "post_ids": [12, 34] }`: responds with the package zip file. |
 | `POST /import/packages` | Multipart upload (field `package`): stores the package and returns a `token` with the import plan. |
 | `GET /import/packages/{token}` | The import plan of an uploaded package. |
-| `POST /import/packages/{token}/import` | `{ "skip": ["<uuid>"] }`: runs the import and returns the report. The package is deleted afterwards. |
+| `POST /import/packages/{token}/import` | `{ "skip": ["<uuid>"] }`: starts the import and runs the first batch. Returns `{ done, processed, total }`, plus `report` once done. |
+| `POST /import/packages/{token}/import/next` | Runs the next batch. Call it until `done` is `true`; the package is deleted afterwards. |
 | `DELETE /import/packages/{token}` | Discards an uploaded package. |
 
 Uploaded packages are only visible to the user who uploaded them and expire after a day (see [`selective_entity_sync_temp_file_lifetime`](#selective_entity_sync_temp_file_lifetime)).
@@ -621,6 +622,25 @@ Since `0.1.0`.
 add_filter( 'selective_entity_sync_replace_site_url', '__return_false' );
 ```
 
+#### `selective_entity_sync_import_batch_limits`
+
+Filters how much one import request processes before continuing in the next one. Imports from the admin screen run in batches so large packages stay within PHP's time and memory limits. A batch stops after `max_entities` entities or `max_seconds` seconds, whichever comes first, and always processes at least one entity. WP-CLI imports aren't batched.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$limits` | `array` | `max_entities` (default 25) and `max_seconds` (default 15). Invalid or non-positive values fall back to the defaults. |
+
+Since `0.1.0`.
+
+```php
+// A host with a 30-second limit and slow image processing.
+add_filter( 'selective_entity_sync_import_batch_limits', function ( array $limits ) {
+	$limits['max_entities'] = 10;
+	$limits['max_seconds']  = 10;
+	return $limits;
+} );
+```
+
 ## Roadmap to launch
 
 What's left before the first public release. Items are ticked as they land on `main`.
@@ -643,7 +663,7 @@ What's left before the first public release. Items are ticked as they land on `m
 - [x] Reference rewriting: block attributes (`id`, `ids`, `mediaId`, …), `wp-image-N` classes, `[gallery ids]`, `_thumbnail_id`, post and term parents, ID-bearing meta, media URLs, site URL
 - [x] Media import: file sideloading, regenerated image sizes, deduplication
 - [x] Conflict handling: update by default, skip per item (UI) or by filter
-- [ ] Batched processing for large packages
+- [x] Batched processing for large packages (admin imports run over several requests with a progress bar)
 - [x] Import REST endpoints (upload, preview, run, discard)
 - [x] WP-CLI: `wp selective-entity-sync import <file> [--dry-run]`
 

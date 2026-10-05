@@ -22,10 +22,12 @@ use SelectiveEntitySync\Export\Exporter;
 use SelectiveEntitySync\Export\ExportSettings;
 use SelectiveEntitySync\Identity\EntityUuid;
 use SelectiveEntitySync\Import\AuthorResolver;
+use SelectiveEntitySync\Import\BatchLimits;
 use SelectiveEntitySync\Import\Handlers\AttachmentHandler;
 use SelectiveEntitySync\Import\Handlers\PostHandler;
 use SelectiveEntitySync\Import\Handlers\TermHandler;
 use SelectiveEntitySync\Import\Importer;
+use SelectiveEntitySync\Import\ImportJobStore;
 use SelectiveEntitySync\Import\ImportPlanner;
 use SelectiveEntitySync\Import\MetaImporter;
 use SelectiveEntitySync\Import\PackageStore;
@@ -161,15 +163,17 @@ class Plugin {
 		);
 		$reader        = new PackageReader( $codec, new PackageLimits() );
 		$package_store = new PackageStore();
+		$job_store     = new ImportJobStore();
 
 		return array(
 			$i18n,
 			new AdminPage( $this->plugin_file, $capabilities, $i18n ),
 			$storage,
 			$package_store,
+			$job_store,
 			new EntitiesController( $capabilities, $settings, $uuids ),
 			new ExportController( $capabilities, $settings, $exporter, $storage ),
-			new ImportController( $capabilities, $package_store, $reader, $importer, $storage ),
+			new ImportController( $capabilities, $package_store, $reader, $importer, $storage, $job_store, new BatchLimits() ),
 			new CliCommands( new Command( $exporter, $storage, $reader, $importer ) ),
 		);
 	}

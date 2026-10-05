@@ -108,15 +108,31 @@ export function uploadPackage( file ) {
 /**
  * Imports an uploaded package.
  *
+ * Starts importing an uploaded package. Large packages are imported in
+ * batches: call continueImport() until `done` is true.
+ *
  * @param {string}   token Package token.
  * @param {string[]} skip  UUIDs not to write.
- * @return {Promise<Object>} Report: items, counts, warnings.
+ * @return {Promise<Object>} Progress: done, processed, total, and report once done.
  */
 export function importPackage( token, skip ) {
 	return apiFetch( {
 		path: `${ NAMESPACE }/import/packages/${ token }/import`,
 		method: 'POST',
 		data: { skip },
+	} );
+}
+
+/**
+ * Runs the next batch of a started import.
+ *
+ * @param {string} token Package token.
+ * @return {Promise<Object>} Progress: done, processed, total, and report once done.
+ */
+export function continueImport( token ) {
+	return apiFetch( {
+		path: `${ NAMESPACE }/import/packages/${ token }/import/next`,
+		method: 'POST',
 	} );
 }
 

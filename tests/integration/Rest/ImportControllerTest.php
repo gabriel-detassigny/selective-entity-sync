@@ -8,6 +8,7 @@
 namespace SelectiveEntitySync\Tests\Integration\Rest;
 
 use SelectiveEntitySync\Identity\EntityUuid;
+use SelectiveEntitySync\Import\ImportJobStore;
 use SelectiveEntitySync\Import\PackageStore;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Tests\Integration\Export\BuildsExporter;
@@ -90,10 +91,84 @@ class ImportControllerTest extends RestTestCase {
 
 		$import = $this->request( 'POST', '/import/packages/' . $data['token'] . '/import' );
 		$this->assertSame( 200, $import->get_status(), (string) wp_json_encode( $import->get_data() ) );
-		$this->assertSame( 2, $import->get_data()['counts']['updated'] );
+		$this->assertTrue( $import->get_data()['done'] );
+		$this->assertSame( 2, $import->get_data()['report']['counts']['updated'] );
 		$this->assertSame( 'Synced', get_post( $post )->post_title );
 		$this->assertNull( $store->get_path( $data['token'] ), 'The package is deleted after import.' );
 		$this->assertSame( 404, $this->request( 'POST', '/import/packages/' . $data['token'] . '/import' )->get_status() );
+	}
+
+	public function test_large_imports_run_in_batches_until_done(): void {
+		$this->login_as( 'administrator' );
+		$parent = self::factory()->post->create( array( 'post_type' => 'page' ) );
+		$child  = self::factory()->post->create(
+			array(
+				'post_type'   => 'page',
+				'post_parent' => $parent,
+				'post_title'  => 'Batched child',
+			)
+		);
+		$token  = $this->store( $this->make_package( $child ) );
+		wp_update_post(
+			array(
+				'ID'         => $child,
+				'post_title' => 'Changed',
+			)
+		);
+		add_filter(
+			'selective_entity_sync_import_batch_limits',
+			static function () {
+				return array(
+					'max_entities' => 1,
+					'max_seconds'  => 60,
+				);
+			}
+		);
+
+		$first = $this->request( 'POST', '/import/packages/' . $token . '/import' )->get_data();
+		$this->assertFalse( $first['done'] );
+		$this->assertSame( 1, $first['processed'] );
+		$this->assertSame( 2, $first['total'] );
+		$this->assertArrayNotHasKey( 'report', $first );
+		$this->assertSame( 409, $this->request( 'POST', '/import/packages/' . $token . '/import' )->get_status(), 'An import starts only once.' );
+
+		$jobs = new ImportJobStore();
+		$jobs->acquire_lock( $token );
+		$this->assertSame( 409, $this->request( 'POST', '/import/packages/' . $token . '/import/next' )->get_status(), 'Concurrent batches are refused.' );
+		$jobs->release_lock( $token );
+
+		$responses = 0;
+		do {
+			$next = $this->request( 'POST', '/import/packages/' . $token . '/import/next' )->get_data();
+			++$responses;
+		} while ( ! $next['done'] && $responses < 10 );
+
+		$this->assertTrue( $next['done'] );
+		$this->assertSame( 2, $next['report']['counts']['updated'] );
+		$this->assertSame( 'Batched child', get_post( $child )->post_title );
+		$this->assertNull( ( new PackageStore() )->get_path( $token ), 'The package is deleted once done.' );
+		$this->assertNull( $jobs->load( $token ), 'The job is deleted once done.' );
+		$this->assertSame( 404, $this->request( 'POST', '/import/packages/' . $token . '/import/next' )->get_status() );
+	}
+
+	public function test_discarding_a_started_import_deletes_its_job(): void {
+		$this->login_as( 'administrator' );
+		$token = $this->store( $this->make_package( self::factory()->post->create() ) );
+		add_filter(
+			'selective_entity_sync_import_batch_limits',
+			static function () {
+				return array(
+					'max_entities' => 1,
+					'max_seconds'  => 60,
+				);
+			}
+		);
+		$this->request( 'POST', '/import/packages/' . $token . '/import' );
+		$this->assertNotNull( ( new ImportJobStore() )->load( $token ) );
+
+		$this->assertSame( 200, $this->request( 'DELETE', '/import/packages/' . $token )->get_status() );
+
+		$this->assertNull( ( new ImportJobStore() )->load( $token ) );
 	}
 
 	public function test_import_honours_skip_list(): void {
@@ -108,7 +183,7 @@ class ImportControllerTest extends RestTestCase {
 		);
 		$token = $this->store( $path );
 
-		$report = $this->request( 'POST', '/import/packages/' . $token . '/import', array( 'skip' => array( ( new EntityUuid() )->find( 'post', $post ) ) ) )->get_data();
+		$report = $this->request( 'POST', '/import/packages/' . $token . '/import', array( 'skip' => array( ( new EntityUuid() )->find( 'post', $post ) ) ) )->get_data()['report'];
 
 		$this->assertSame( 1, $report['counts']['skipped'] );
 		$this->assertSame( 'Keep me', get_post( $post )->post_title );

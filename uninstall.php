@@ -29,6 +29,14 @@ foreach ( $selective_entity_sync_directories as $selective_entity_sync_directory
 	}
 }
 
+// Import jobs in progress, their locks, and the job index.
+$selective_entity_sync_jobs = get_option( 'selective_entity_sync_jobs', array() );
+foreach ( is_array( $selective_entity_sync_jobs ) ? array_keys( $selective_entity_sync_jobs ) : array() as $selective_entity_sync_token ) {
+	delete_option( 'selective_entity_sync_job_' . $selective_entity_sync_token );
+	delete_option( 'selective_entity_sync_job_lock_' . $selective_entity_sync_token );
+}
+delete_option( 'selective_entity_sync_jobs' );
+
 // Ownership records of uploaded packages. With a persistent object cache they live in the cache
 // instead, and expire on their own within the package lifetime (a day by default).
 global $wpdb;

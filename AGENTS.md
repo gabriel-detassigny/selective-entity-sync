@@ -41,7 +41,7 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 There are two separate wp-env environments, each with its own containers and database:
 
 - **Dev site** (`.wp-env.json`, port 8898): for manual work. Tests never touch it.
-- **Test site** (`.wp-env.test.json`, port 8899): used by `npm run test:php` and `npm run test:e2e`. PHPUnit reinstalls its database on every run, so e2e specs must set up their own state, for example activating the plugin in `beforeAll`.
+- **Test site** (`.wp-env.test.json`, port 8899): used by `npm run test:php` and `npm run test:e2e`. It maps a test-only mu-plugin (`tests/e2e/mu-plugins/`) that lets e2e tests force small import batches with an `X-SES-Batch-Size` header. PHPUnit reinstalls its database on every run, so e2e specs must set up their own state, for example activating the plugin in `beforeAll`.
 
 Local-only tweaks go in the gitignored `.wp-env.override.json` / `.wp-env.test.override.json`. Keep `"testsEnvironment": false` in both configs, and don't use the deprecated `env.tests` / `testsPort` options.
 
@@ -64,8 +64,9 @@ src/                        PHP, PSR-4 namespace SelectiveEntitySync\
   Export/                   Exporter (dependency walk), ExportContext, ExportSettings (filters), Collectors/.
   Rest/                     REST controllers under selective-entity-sync/v1.
   Cli/                      `wp selective-entity-sync` command.
-  Import/                   ImportPlanner (matching), Importer (ordering, writes), Handlers/, MetaImporter,
-                            AuthorResolver, PackageStore (uploads kept between requests).
+  Import/                   ImportPlanner (matching), Importer (start/run in batches, ordering, writes),
+                            ImportJob + ImportJobStore (job state, locks), BatchLimits, Handlers/,
+                            MetaImporter, AuthorResolver, PackageStore (uploads kept between requests).
 src-js/                     React admin app (built by @wordpress/scripts to build/).
 tests/unit/                 PHPUnit + Brain Monkey. No WordPress loaded.
 tests/integration/          PHPUnit + WP test suite, runs inside wp-env.
@@ -114,6 +115,7 @@ languages/                  .pot / translations.
 - Use `$wpdb->prepare()` for any direct query (prefer core APIs over direct queries).
 - Per-object rights go through `Support\ObjectPermissions` (read on export; create/edit/publish/author/terms/media on import). The plugin capability alone is not enough once a site lowers it.
 - Import must never write non-content post types or arbitrary statuses: validate against `ExportSettings`.
+- Admin imports run in batches across requests: anything an import needs later (IDs, URL replacements, fixups, report) must live in `ImportContext`/`ImportJob` state, not in object properties or `/tmp` files from an earlier request.
 
 ### Internationalization
 

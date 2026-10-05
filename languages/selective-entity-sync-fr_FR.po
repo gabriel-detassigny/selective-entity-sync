@@ -8,7 +8,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "POT-Creation-Date: 2026-10-05T14:44:10+00:00\n"
-"PO-Revision-Date: 2026-10-05T14:48:06+00:00\n"
+"PO-Revision-Date: 2026-10-05T19:01:58+00:00\n"
 "Language: fr_FR\n"
 "Plural-Forms: nplurals=2; plural=(n > 1);\n"
 "X-Generator: WP-CLI 2.12.0\n"
@@ -177,11 +177,11 @@ msgstr "Vous n’êtes pas autorisé à créer ou modifier le terme « %s »."
 msgid "The term \"%1$s\" could not be saved: %2$s"
 msgstr "Le terme « %1$s » n’a pas pu être enregistré : %2$s"
 
-#: src/Import/Importer.php:162
+#: src/Import/Importer.php:246
 msgid "Not found on this site: references to it will not be remapped."
 msgstr "Introuvable sur ce site : les références à cet élément ne seront pas réattribuées."
 
-#: src/Import/Importer.php:165
+#: src/Import/Importer.php:249
 msgid "Deselected."
 msgstr "Désélectionné."
 
@@ -275,90 +275,94 @@ msgid "The manifest is invalid: \"%s\" is missing or malformed."
 msgstr "Le manifeste n’est pas valide : « %s » est absent ou mal formé."
 
 #. translators: %s: File path inside the package.
-#: src/Package/Package.php:72
+#: src/Package/Package.php:88
 #, php-format
 msgid "The file %s is not part of this package."
 msgstr "Le fichier %s ne fait pas partie de ce paquet."
 
-#: src/Package/PackageReader.php:115
-msgid "The PHP zip extension is required to read packages."
-msgstr "L’extension PHP zip est nécessaire pour lire les paquets."
-
-#: src/Package/PackageReader.php:119
+#: src/Package/Package.php:114
+#: src/Package/PackageReader.php:140
 msgid "The package file could not be read."
 msgstr "Le fichier du paquet n’a pas pu être lu."
 
+#: src/Package/Package.php:121
+#: src/Package/PackageReader.php:311
+msgid "The package could not be extracted."
+msgstr "Le paquet n’a pas pu être extrait."
+
+#. translators: %s: File path inside the package.
+#: src/Package/Package.php:129
+#: src/Package/PackageReader.php:330
+#, php-format
+msgid "The file %s is corrupted: its checksum does not match the manifest."
+msgstr "Le fichier %s est corrompu : son empreinte ne correspond pas au manifeste."
+
+#: src/Package/PackageReader.php:91
+#: src/Package/PackageReader.php:306
+msgid "The package could not be extracted: the working directory is not writable."
+msgstr "Le paquet n’a pas pu être extrait : le dossier de travail n’est pas accessible en écriture."
+
+#: src/Package/PackageReader.php:136
+msgid "The PHP zip extension is required to read packages."
+msgstr "L’extension PHP zip est nécessaire pour lire les paquets."
+
 #. translators: %s: Maximum package size, e.g. "512 MB".
-#: src/Package/PackageReader.php:126
+#: src/Package/PackageReader.php:147
 #, php-format
 msgid "The package is larger than the maximum allowed size of %s."
 msgstr "Le paquet dépasse la taille maximale autorisée de %s."
 
-#: src/Package/PackageReader.php:134
+#: src/Package/PackageReader.php:155
 msgid "The file is not a valid package (zip) file."
 msgstr "Ce fichier n’est pas un paquet (zip) valide."
 
-#: src/Package/PackageReader.php:139
+#: src/Package/PackageReader.php:160
 msgid "The package contains too many files."
 msgstr "Le paquet contient trop de fichiers."
 
-#: src/Package/PackageReader.php:156
+#: src/Package/PackageReader.php:177
 msgid "The package does not contain a manifest.json file."
 msgstr "Le paquet ne contient pas de fichier manifest.json."
 
-#: src/Package/PackageReader.php:160
+#: src/Package/PackageReader.php:181
 msgid "The package manifest is too large."
 msgstr "Le manifeste du paquet est trop volumineux."
 
-#: src/Package/PackageReader.php:165
+#: src/Package/PackageReader.php:186
 msgid "The package manifest could not be read."
 msgstr "Le manifeste du paquet n’a pas pu être lu."
 
-#: src/Package/PackageReader.php:191
+#: src/Package/PackageReader.php:212
 msgid "The package could not be read."
 msgstr "Le paquet n’a pas pu être lu."
 
 #. translators: %s: Entry name inside the zip file.
-#: src/Package/PackageReader.php:210
+#: src/Package/PackageReader.php:231
 #, php-format
 msgid "The package contains an unexpected file: %s"
 msgstr "Le paquet contient un fichier inattendu : %s"
 
 #. translators: %s: File path inside the package.
-#: src/Package/PackageReader.php:220
+#: src/Package/PackageReader.php:241
 #, php-format
 msgid "The size of %s does not match the manifest."
 msgstr "La taille de %s ne correspond pas au manifeste."
 
-#: src/Package/PackageReader.php:228
+#: src/Package/PackageReader.php:249
 msgid "The package contents are larger than the maximum allowed size."
 msgstr "Le contenu du paquet dépasse la taille maximale autorisée."
 
 #. translators: %s: File path inside the package.
-#: src/Package/PackageReader.php:240
+#: src/Package/PackageReader.php:261
 #, php-format
 msgid "The package is missing the file %s."
 msgstr "Le fichier %s est absent du paquet."
 
 #. translators: %s: File path inside the package.
-#: src/Package/PackageReader.php:262
+#: src/Package/PackageReader.php:283
 #, php-format
 msgid "The package contains a file type that is not allowed: %s"
 msgstr "Le paquet contient un type de fichier non autorisé : %s"
-
-#: src/Package/PackageReader.php:285
-msgid "The package could not be extracted: the working directory is not writable."
-msgstr "Le paquet n’a pas pu être extrait : le dossier de travail n’est pas accessible en écriture."
-
-#: src/Package/PackageReader.php:290
-msgid "The package could not be extracted."
-msgstr "Le paquet n’a pas pu être extrait."
-
-#. translators: %s: File path inside the package.
-#: src/Package/PackageReader.php:309
-#, php-format
-msgid "The file %s is corrupted: its checksum does not match the manifest."
-msgstr "Le fichier %s est corrompu : son empreinte ne correspond pas au manifeste."
 
 #. translators: %s: File path inside the package.
 #: src/Package/PackageWriter.php:77
@@ -388,11 +392,19 @@ msgstr "Désolé, vous n’êtes pas autorisé à synchroniser des contenus."
 msgid "Invalid parameter: %s"
 msgstr "Paramètre non valide : %s"
 
-#: src/Rest/ImportController.php:139
+#: src/Rest/ImportController.php:174
 msgid "Please choose a package file to upload."
 msgstr "Choisissez un fichier de paquet à téléverser."
 
-#: src/Rest/ImportController.php:251
+#: src/Rest/ImportController.php:214
+msgid "This import has already started."
+msgstr "Cet import a déjà commencé."
+
+#: src/Rest/ImportController.php:257
+msgid "This import is already running in another window."
+msgstr "Cet import est déjà en cours dans une autre fenêtre."
+
+#: src/Rest/ImportController.php:360
 msgid "This package was not found. It may have expired: please upload it again."
 msgstr "Ce paquet est introuvable. Il a peut-être expiré : téléversez-le à nouveau."
 
@@ -476,7 +488,7 @@ msgid "Close"
 msgstr "Fermer"
 
 #: build/index.js:120
-#: build/index.js:123
+#: build/index.js:124
 msgid "Cancel"
 msgstr "Annuler"
 
@@ -501,7 +513,7 @@ msgid "Last modified"
 msgstr "Dernière modification"
 
 #: build/index.js:120
-#: build/index.js:124
+#: build/index.js:125
 msgid "Export"
 msgstr "Exporter"
 
@@ -621,14 +633,20 @@ msgstr "Même fichier"
 msgid "Matched by customization"
 msgstr "Associé par une personnalisation"
 
-#. translators: %d: Number of items.
+#. translators: 1: Number of items imported so far, 2: Total number of items.
 #: build/index.js:124
+#, js-format
+msgid "Importing… %1$d of %2$d"
+msgstr "Import en cours… %1$d sur %2$d"
+
+#. translators: %d: Number of items.
+#: build/index.js:125
 #, js-format
 msgid "Import %d item"
 msgid_plural "Import %d items"
 msgstr[0] "Importer %d élément"
 msgstr[1] "Importer %d éléments"
 
-#: build/index.js:124
+#: build/index.js:125
 msgid "Import"
 msgstr "Importer"

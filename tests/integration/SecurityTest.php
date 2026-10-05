@@ -222,6 +222,9 @@ class SecurityTest extends WP_UnitTestCase {
 		wp_mkdir_p( $packages );
 		file_put_contents( $packages . '/abc.zip', 'x' );
 		set_transient( 'selective_entity_sync_pkg_abc', array( 'user_id' => 1 ), HOUR_IN_SECONDS );
+		$jobs = new \SelectiveEntitySync\Import\ImportJobStore();
+		$jobs->save( 'abc', new \SelectiveEntitySync\Import\ImportJob( array(), array(), new \SelectiveEntitySync\Import\ImportReport() ) );
+		$jobs->acquire_lock( 'abc' );
 		wp_schedule_event( time(), 'daily', TempStorage::CRON_HOOK );
 
 		if ( ! defined( 'WP_UNINSTALL_PLUGIN' ) ) {
@@ -234,5 +237,8 @@ class SecurityTest extends WP_UnitTestCase {
 		global $wpdb;
 		$this->assertSame( '0', $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->options} WHERE option_name LIKE '%selective_entity_sync_pkg_%'" ) );
 		$this->assertFalse( wp_next_scheduled( TempStorage::CRON_HOOK ) );
+		$this->assertFalse( get_option( 'selective_entity_sync_job_abc' ) );
+		$this->assertFalse( get_option( 'selective_entity_sync_job_lock_abc' ) );
+		$this->assertFalse( get_option( 'selective_entity_sync_jobs' ) );
 	}
 }

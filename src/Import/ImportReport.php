@@ -137,6 +137,29 @@ class ImportReport {
 	}
 
 	/**
+	 * Returns the state needed to resume the report in another request.
+	 *
+	 * @return array{items: array<string, array<string, mixed>>, warnings: string[]}
+	 */
+	public function get_state(): array {
+		return array(
+			'items'    => $this->items,
+			'warnings' => $this->warnings,
+		);
+	}
+
+	/**
+	 * Restores state saved by get_state().
+	 *
+	 * @param array<string, mixed> $state Saved state.
+	 * @return void
+	 */
+	public function restore_state( array $state ): void {
+		$this->items    = (array) ( $state['items'] ?? array() );
+		$this->warnings = array_map( 'strval', (array) ( $state['warnings'] ?? array() ) );
+	}
+
+	/**
 	 * Returns the admin edit link of a local object.
 	 *
 	 * @param string $type     Entity type.

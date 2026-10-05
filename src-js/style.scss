@@ -76,6 +76,18 @@
 		margin-top: 16px;
 	}
 
+	&__progress {
+		display: flex;
+		gap: 12px;
+		align-items: center;
+		margin-top: 16px;
+
+		progress {
+			flex: 1;
+			height: 8px;
+		}
+	}
+
 	&__action {
 		display: inline-block;
 		padding: 0 8px;

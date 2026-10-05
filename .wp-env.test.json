@@ -8,5 +8,8 @@
   "config": {
     "WP_DEBUG": true,
     "SCRIPT_DEBUG": true
+  },
+  "mappings": {
+    "wp-content/mu-plugins/selective-entity-sync-e2e.php": "./tests/e2e/mu-plugins/batch-size.php"
   }
 }

@@ -9,7 +9,12 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { discardPackage, importPackage, uploadPackage } from '../../api';
+import {
+	continueImport,
+	discardPackage,
+	importPackage,
+	uploadPackage,
+} from '../../api';
 import { actionLabel, matchLabel } from './labels';
 import ImportReport from './ImportReport';
 
@@ -21,6 +26,7 @@ export default function ImportTab() {
 	const [ deselected, setDeselected ] = useState( [] );
 	const [ busy, setBusy ] = useState( null );
 	const [ error, setError ] = useState( null );
+	const [ progress, setProgress ] = useState( null );
 
 	const writable = useMemo(
 		() =>
@@ -69,12 +75,20 @@ export default function ImportTab() {
 		setBusy( 'import' );
 		setError( null );
 		try {
-			setReport( await importPackage( plan.token, deselected ) );
+			// Large packages are imported over several requests.
+			let result = await importPackage( plan.token, deselected );
+			setProgress( result );
+			while ( ! result.done ) {
+				result = await continueImport( plan.token );
+				setProgress( result );
+			}
+			setReport( result.report );
 			setPlan( null );
 		} catch ( e ) {
 			setError( e.message );
 		} finally {
 			setBusy( null );
+			setProgress( null );
 		}
 	};
 
@@ -249,6 +263,26 @@ export default function ImportTab() {
 						</tbody>
 					</table>
 
+					{ progress && (
+						<div className="selective-entity-sync-import__progress">
+							<progress
+								value={ progress.processed }
+								max={ Math.max( progress.total, 1 ) }
+							/>
+							<span>
+								{ sprintf(
+									/* translators: 1: Number of items imported so far, 2: Total number of items. */
+									__(
+										'Importing… %1$d of %2$d',
+										'selective-entity-sync'
+									),
+									progress.processed,
+									progress.total
+								) }
+							</span>
+						</div>
+					) }
+
 					<div className="selective-entity-sync-import__actions">
 						<Button
 							variant="tertiary"
@@ -276,7 +310,7 @@ export default function ImportTab() {
 								selectedCount
 							) }
 						</Button>
-						{ 'import' === busy && <Spinner /> }
+						{ 'import' === busy && ! progress && <Spinner /> }
 					</div>
 				</div>
 			) }

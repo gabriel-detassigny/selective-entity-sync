@@ -61,7 +61,7 @@ class PackageReader {
 	 */
 	public function read_manifest( string $zip_path ): Manifest {
 		$limits = $this->limits->get();
-		$zip    = $this->open( $zip_path, $limits );
+		$zip    = $this->open_zip( $zip_path, $limits );
 
 		try {
 			$manifest = $this->load_manifest( $zip, $limits );
@@ -71,6 +71,27 @@ class PackageReader {
 		}
 
 		return $manifest;
+	}
+
+	/**
+	 * Validates a package without extracting it. Files are extracted (and their
+	 * checksums verified) when first requested from the returned package.
+	 *
+	 * The caller owns the extraction directory and is responsible for deleting it.
+	 *
+	 * @param string $zip_path    Absolute path of the zip file.
+	 * @param string $extract_dir Absolute path of an existing, empty directory.
+	 * @return Package
+	 * @throws PackageException When the package is invalid or unsafe.
+	 */
+	public function open( string $zip_path, string $extract_dir ): Package {
+		$manifest = $this->read_manifest( $zip_path );
+
+		if ( ! is_dir( $extract_dir ) || ! wp_is_writable( $extract_dir ) ) {
+			throw new PackageException( __( 'The package could not be extracted: the working directory is not writable.', 'selective-entity-sync' ) );
+		}
+
+		return new Package( $manifest, $extract_dir, $zip_path );
 	}
 
 	/**
@@ -86,7 +107,7 @@ class PackageReader {
 	 */
 	public function read( string $zip_path, string $extract_dir ): Package {
 		$limits = $this->limits->get();
-		$zip    = $this->open( $zip_path, $limits );
+		$zip    = $this->open_zip( $zip_path, $limits );
 
 		try {
 			$manifest = $this->load_manifest( $zip, $limits );
@@ -110,7 +131,7 @@ class PackageReader {
 	 * @return ZipArchive
 	 * @throws PackageException When the file is missing, too large, or not a zip.
 	 */
-	private function open( string $zip_path, array $limits ): ZipArchive {
+	private function open_zip( string $zip_path, array $limits ): ZipArchive {
 		if ( ! class_exists( ZipArchive::class ) ) {
 			throw new PackageException( __( 'The PHP zip extension is required to read packages.', 'selective-entity-sync' ) );
 		}

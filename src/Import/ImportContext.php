@@ -261,6 +261,35 @@ class ImportContext {
 	}
 
 	/**
+	 * Returns the state needed to resume the import in another request.
+	 *
+	 * @return array{ids: array<string, int>, pending: string[], needs_fixup: string[], url_replacements: array<string, string>, warnings: string[]}
+	 */
+	public function get_state(): array {
+		return array(
+			'ids'              => $this->ids,
+			'pending'          => array_keys( $this->pending ),
+			'needs_fixup'      => array_keys( $this->needs_fixup ),
+			'url_replacements' => $this->url_replacements,
+			'warnings'         => $this->warnings,
+		);
+	}
+
+	/**
+	 * Restores state saved by get_state().
+	 *
+	 * @param array<string, mixed> $state Saved state.
+	 * @return void
+	 */
+	public function restore_state( array $state ): void {
+		$this->ids              = array_map( 'intval', (array) ( $state['ids'] ?? array() ) );
+		$this->pending          = array_fill_keys( array_map( 'strval', (array) ( $state['pending'] ?? array() ) ), true );
+		$this->needs_fixup      = array_fill_keys( array_map( 'strval', (array) ( $state['needs_fixup'] ?? array() ) ), true );
+		$this->url_replacements = array_map( 'strval', (array) ( $state['url_replacements'] ?? array() ) );
+		$this->warnings         = array_map( 'strval', (array) ( $state['warnings'] ?? array() ) );
+	}
+
+	/**
 	 * Adds a warning for the user.
 	 *
 	 * @param string $message Translated message.
