@@ -231,7 +231,7 @@ What's left before the first public release. Items are ticked as they land on `m
 ### Quality and maintenance
 
 - [ ] End-to-end round-trip test: export, alter the target, import, assert every reference is remapped and unrelated content is untouched
-- [ ] Automated dependency updates and vulnerability alerts (Composer, npm, GitHub Actions)
+- [x] Automated dependency updates and vulnerability alerts (Dependabot for Composer, npm and GitHub Actions; `composer audit` and `npm audit` in CI)
 - [ ] Security review of all entry points (REST, uploads, WP-CLI)
 - [ ] Translation files: generate the `.pot` and the JS translation JSON, and check with a non-English locale
 

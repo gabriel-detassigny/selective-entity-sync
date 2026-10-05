@@ -93,6 +93,13 @@ languages/                  .pot / translations.
   - Methods, properties and variables use WordPress `snake_case`.
 - Formatting: tabs for indentation, Yoda conditions.
 
+### Dependencies
+
+- npm `dependencies` = code that is **bundled into `build/`**. Everything else goes in `devDependencies`, including `@wordpress/*` packages that `@wordpress/scripts` externalises to WordPress core (`wp-components`, `wp-element`, …). CI audits only `dependencies` (`npm audit --omit=dev`).
+- Before adding a bundled dependency (e.g. `@wordpress/dataviews`), check it works with WordPress 6.9's React and core packages.
+- Composer runtime dependencies must support PHP 7.4 (`config.platform.php` enforces this). Prefer none: anything in `vendor/` ships in the release zip.
+- Dependabot opens grouped update PRs weekly (Composer, npm, GitHub Actions) and security PRs as advisories appear. Merge them only when CI is green, and treat `@wordpress/*` majors as needing a manual check.
+
 ### Security
 
 - Check capabilities through `Support\Capabilities` on every entry point (admin, REST, CLI where relevant).

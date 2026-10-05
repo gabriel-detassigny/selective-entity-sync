@@ -1,0 +1,46 @@
+# Dependabot version updates. Security updates are enabled separately in the
+# repository settings and are opened as soon as an advisory is published.
+# https://docs.github.com/code-security/dependabot/working-with-dependabot/dependabot-options-reference
+version: 2
+
+updates:
+  - package-ecosystem: composer
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    # composer.json pins config.platform.php to 7.4, so updates stay PHP 7.4 compatible.
+    versioning-strategy: increase
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      composer-minor-patch:
+        update-types: [ minor, patch ]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    versioning-strategy: increase
+    commit-message:
+      prefix: chore(deps)
+    groups:
+      # Released together from the Gutenberg monorepo; update them as one PR, majors included.
+      wordpress-packages:
+        patterns: [ '@wordpress/*' ]
+      playwright:
+        patterns: [ '@playwright/*', 'playwright', 'playwright-core' ]
+      npm-minor-patch:
+        update-types: [ minor, patch ]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      github-actions:
+        patterns: [ '*' ]

@@ -14,7 +14,7 @@ permissions:
 
 jobs:
   php:
-    name: PHPCS & PHPStan
+    name: PHPCS, PHPStan & audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -35,8 +35,11 @@ jobs:
       - name: PHPStan
         run: composer analyse -- --error-format=github
 
+      - name: Composer audit
+        run: composer audit --abandoned=report
+
   js:
-    name: ESLint & Stylelint
+    name: ESLint, Stylelint & audit
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -49,3 +52,7 @@ jobs:
       - run: npm ci
 
       - run: npm run lint
+
+      # Only `dependencies` ship in build/; dev tooling vulnerabilities are reported by Dependabot alerts.
+      - name: npm audit (shipped dependencies)
+        run: npm audit --omit=dev --audit-level=high
