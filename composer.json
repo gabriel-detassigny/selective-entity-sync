@@ -1,6 +1,6 @@
 {
   "name": "gabriel-detassigny/selective-entity-sync",
-  "description": "Push selected WordPress content (posts, terms, media) from staging to production via entity manifests, with automatic ID remapping.",
+  "description": "Push selected content (posts, terms, media) between WordPress sites (e.g. staging to production) via entity manifests, with automatic ID remapping.",
   "type": "wordpress-plugin",
   "license": "GPL-2.0-or-later",
   "authors": [

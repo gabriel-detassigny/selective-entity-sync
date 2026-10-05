@@ -17,7 +17,7 @@ jobs:
     name: PHPCS & PHPStan
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - uses: shivammathur/setup-php@v2
         with:
@@ -27,7 +27,7 @@ jobs:
 
       - run: composer validate --strict
 
-      - uses: ramsey/composer-install@v3
+      - uses: ramsey/composer-install@v4
 
       - name: PHPCS
         run: vendor/bin/phpcs -q --report=checkstyle | cs2pr
@@ -39,9 +39,9 @@ jobs:
     name: ESLint & Stylelint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v5
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: npm

@@ -8,11 +8,11 @@ Stable tag: 0.1.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Push selected content from staging to production without overwriting live orders, users or form entries. IDs are remapped automatically.
+Push selected content between WordPress sites, e.g. staging to production, without overwriting live orders, users or form entries. IDs are remapped automatically.
 
 == Description ==
 
-Selective Entity Sync exports the exact posts, pages, custom post type entries, terms and media you choose into a portable manifest, then imports them on another site. Every relational ID is remapped on import: parent pages, featured images, term hierarchy, and image and gallery IDs inside blocks.
+Selective Entity Sync exports the exact posts, pages, custom post type entries, terms and media you choose into a portable manifest, then imports them on another site: staging to production, production to staging, or between any two WordPress sites. Every relational ID is remapped on import: parent pages, featured images, term hierarchy, and image and gallery IDs inside blocks.
 
 Unlike full database or table migrations, nothing outside your selection is touched. That makes it safe to use on live sites with WooCommerce orders, memberships or form submissions.
 

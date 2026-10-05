@@ -2,7 +2,7 @@
 /**
  * Plugin Name:       Selective Entity Sync
  * Plugin URI:        https://github.com/gabriel-detassigny/selective-entity-sync
- * Description:       Push selected content (posts, pages, custom post types, terms and media) from staging to production using entity manifests, with automatic ID remapping, so live data is never overwritten.
+ * Description:       Push selected content (posts, pages, custom post types, terms and media) from one WordPress site to another (e.g. staging to production) using entity manifests, with automatic ID remapping, so live data is never overwritten.
  * Version:           0.1.0-dev
  * Requires at least: 6.9
  * Requires PHP:      7.4

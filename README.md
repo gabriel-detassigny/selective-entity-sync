@@ -1,8 +1,8 @@
 # Selective Entity Sync
 
-> Push **specific content** from Staging to Production without overwriting live data.
+> Push **specific content** from one WordPress environment to another without overwriting the target's live data.
 
-Selective Entity Sync is a WordPress plugin for deploying content changes safely. It doesn't migrate the whole database, or whole tables, which would wipe out the orders, user accounts and form entries created on the live site since your last sync. Instead it exports the exact **entities** you pick (posts, pages, custom post types, terms, media) into a portable manifest, and imports them on the target site, **remapping every database ID** along the way.
+Selective Entity Sync is a WordPress plugin for moving content changes safely between two WordPress sites, such as staging → production, production → staging, or between two live sites. It doesn't migrate the whole database, or whole tables, which would wipe out the orders, user accounts and form entries created on the target site since your last sync. Instead it exports the exact **entities** you pick (posts, pages, custom post types, terms, media) into a portable manifest, and imports them on the target site, **remapping every database ID** along the way.
 
 > **Status:** early development (`0.1.0-dev`). Not ready for production use yet.
 
@@ -23,10 +23,12 @@ Selective Entity Sync is a WordPress plugin for deploying content changes safely
 
 ## Why
 
-The usual staging workflow is: build content on staging, then copy the database to production. On any site with live activity (WooCommerce, memberships, forms, comments) this means either:
+Many teams prepare content on one environment, often a staging site, and then need it on another. If they move it by copying the database, then on any site with live activity (WooCommerce, memberships, forms, comments) they have to choose between:
 
-- **overwriting production data** created since the last sync, or
-- **re-creating content by hand** on production.
+- **overwriting the target's data** created since the last sync, or
+- **re-creating the content by hand** on the target.
+
+Selective Entity Sync is built for that kind of workflow. Staging → production is the most common case, but it works between **any two WordPress sites**: pulling a fixed-up page back down to staging, sharing content between sister sites, or seeding a new environment.
 
 Table-level migration tools narrow the problem but don't solve it. A post's featured image, parent page, terms and the image IDs inside its blocks all point to auto-increment IDs that differ between sites.
 
@@ -56,7 +58,7 @@ Content that isn't in the manifest is never touched.
 
 ## Limitations
 
-- **No ACF support** in the free plugin. ACF fields that store plain values are synced as post meta, but relational ACF fields (post object, relationship, image, gallery) aren't remapped.
+- **No ACF support** yet. ACF fields that store plain values are synced as post meta, but relational ACF fields (post object, relationship, image, gallery) aren't remapped.
 - **No direct site-to-site push.** Packages are transferred as files.
 - **Users, comments, orders and other non-content data are intentionally never synced.**
 - Very large packages may hit PHP upload or memory limits. Use WP-CLI for big imports.

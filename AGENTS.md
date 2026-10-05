@@ -4,19 +4,19 @@ Guidance for AI coding agents (and humans) working on **Selective Entity Sync**.
 
 ## What this project is
 
-A WordPress plugin that moves **selected content** from one site to another, typically Staging → Production. It never runs a full or table-level database migration, so live orders, users and form entries on the target are never overwritten.
+A WordPress plugin that moves **selected content** between two WordPress sites, most commonly Staging → Production, but any source → target pair works. It never runs a full or table-level database migration, so live orders, users and form entries on the target are never overwritten.
 
-- Staging **exports** an entity manifest: a `.zip` holding `manifest.json` plus the media files.
-- Production **imports** it. Entities are matched by a stable UUID, and every relational ID is **remapped**: post parents, featured images, term hierarchy, and image/gallery IDs inside block content.
+- The source site **exports** an entity manifest: a `.zip` holding `manifest.json` plus the media files.
+- The target site **imports** it. Entities are matched by a stable UUID, and every relational ID is **remapped**: post parents, featured images, term hierarchy, and image/gallery IDs inside block content.
 
-### Scope (free plugin, v0.x)
+### Scope (v0.x)
 
 - In scope:
   - Posts, pages and custom post types (with post meta and parent relations).
   - Taxonomies and terms (hierarchy and term meta).
   - Media attachments (files bundled).
   - Admin UI, REST API and WP-CLI.
-- Out of scope for now: ACF, direct site-to-site push, users, WooCommerce orders, and anything "Pro". Don't add these to core. Design hooks so an add-on could add them.
+- Out of scope for now: ACF, direct site-to-site push, users, WooCommerce orders, and any premium/commercial features. Don't add these to core. Design hooks so an add-on could add them.
 
 ## Commands
 
@@ -116,6 +116,7 @@ languages/                  .pot / translations.
 - Keep `README.md` accurate: features, limitations, usage and the hooks reference.
 - **Never commit AI tool files or folders** (`.claude/`, `.cursor/`, etc. are gitignored). `AGENTS.md` and `CLAUDE.md` are the only exceptions.
 - `.internal/` is private planning material: never commit it or quote it in public files.
+- Don't describe the plugin as a "free" version, or mention a "Pro" version, in public files until a paid version exists.
 
 ## Definition of done
 
