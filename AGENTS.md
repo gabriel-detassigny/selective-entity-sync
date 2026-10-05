@@ -23,17 +23,27 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 | Task | Command |
 |---|---|
 | Install deps | `composer install && npm install` |
-| Start / stop WordPress | `npm run wp-env start` / `npm run wp-env stop` (dev: http://localhost:8898, tests: http://localhost:8899, `admin` / `password`) |
+| Start / stop dev site | `npm run wp-env start` / `npm run wp-env stop` (http://localhost:8898, `admin` / `password`) |
+| Start / stop test site | `npm run wp-env:test start` / `npm run wp-env:test stop` (http://localhost:8899) |
 | Build JS / watch | `npm run build` / `npm run start` |
 | PHP lint / autofix | `composer lint` / `composer lint:fix` |
 | PHP static analysis | `composer analyse` |
 | JS + CSS lint | `npm run lint` |
 | PHP unit tests (no WP) | `composer test:unit` |
-| PHP integration tests (wp-env) | `npm run test:php` |
-| E2E tests (Playwright, wp-env) | `npm run test:e2e` |
-| WP-CLI | `npm run wp-env run cli wp <command>` |
+| PHP integration tests (test site) | `npm run test:php` |
+| E2E tests (Playwright, test site) | `npm run test:e2e` |
+| WP-CLI | `npm run wp-env run cli wp <command>` (dev) / `npm run wp-env:test run cli wp <command>` (test) |
 | Regenerate translations | `npm run makepot` then `npm run makejson` |
 | Release zip | `composer install --no-dev -o && npm run build && npm run plugin-zip` |
+
+### Environments
+
+There are two separate wp-env environments, each with its own containers and database:
+
+- **Dev site** (`.wp-env.json`, port 8898): for manual work. Tests never touch it.
+- **Test site** (`.wp-env.test.json`, port 8899): used by `npm run test:php` and `npm run test:e2e`. PHPUnit reinstalls its database on every run, so e2e specs must set up their own state, for example activating the plugin in `beforeAll`.
+
+Local-only tweaks go in the gitignored `.wp-env.override.json` / `.wp-env.test.override.json`. Keep `"testsEnvironment": false` in both configs, and don't use the deprecated `env.tests` / `testsPort` options.
 
 ## Layout
 

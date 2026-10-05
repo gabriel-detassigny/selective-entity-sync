@@ -145,7 +145,8 @@ Requirements: PHP 7.4+, Composer, Node.js 22+ (24 recommended, see `.nvmrc`), an
 composer install
 npm install
 npm run build
-npm run wp-env start   # dev: http://localhost:8898, tests: http://localhost:8899 (admin / password)
+npm run wp-env start        # dev site:  http://localhost:8898 (admin / password)
+npm run wp-env:test start   # test site: http://localhost:8899, used by test:php and test:e2e
 ```
 
 | Task | Command |
@@ -158,7 +159,7 @@ npm run wp-env start   # dev: http://localhost:8898, tests: http://localhost:889
 | End-to-end tests | `npm run test:e2e` |
 | Generate translation template | `npm run makepot` |
 
-> **Podman users:** with rootless Podman, `wp-content` inside the containers can end up owned by root, so WordPress can't create `wp-content/uploads`. Create it once after the first `wp-env start`:
+> **Podman users:** with rootless Podman, `wp-content` inside the containers can end up owned by root, so WordPress can't create `wp-content/uploads`. Create it once after the first `wp-env start` of each site:
 >
 > ```bash
 > for c in $(podman ps --format '{{.Names}}' | grep wp-env-selective-entity-sync | grep -E 'wordpress-1|cli-1'); do

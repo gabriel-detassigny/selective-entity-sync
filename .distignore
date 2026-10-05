@@ -17,6 +17,8 @@
 .phpunit.result.cache
 .wp-env.json
 .wp-env.override.json
+.wp-env.test.json
+.wp-env.test.override.json
 AGENTS.md
 CLAUDE.md
 CHANGELOG.md

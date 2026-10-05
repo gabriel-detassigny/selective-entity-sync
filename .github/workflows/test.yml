@@ -57,12 +57,12 @@ jobs:
 
       - run: npm ci
 
-      - name: Configure wp-env
+      - name: Configure test environment
         run: |
           if [ "${{ matrix.wp }}" = "latest" ]; then CORE=null; else CORE="\"WordPress/WordPress#${{ matrix.wp }}\""; fi
-          echo "{ \"core\": ${CORE}, \"phpVersion\": \"${{ matrix.php }}\" }" > .wp-env.override.json
-          cat .wp-env.override.json
+          echo "{ \"core\": ${CORE}, \"phpVersion\": \"${{ matrix.php }}\" }" > .wp-env.test.override.json
+          cat .wp-env.test.override.json
 
-      - run: npm run wp-env start
+      - run: npm run wp-env:test start
 
       - run: npm run test:php
