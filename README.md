@@ -99,7 +99,6 @@ wp selective-entity-sync export --post_ids=12,34 --dry-run
 
 # Export to a package.
 wp selective-entity-sync export --post_ids=12,34 --file=/tmp/sync.zip
-```
 
 # Preview an import: what would be created, updated, skipped, linked or missing.
 wp selective-entity-sync import /tmp/sync.zip --dry-run
@@ -112,8 +111,6 @@ wp selective-entity-sync import /tmp/sync.zip --user=admin --skip=<uuid>,<uuid>
 ```
 
 Run imports with `--user=<administrator>`. Without a user, WordPress filters imported content the way it does for untrusted authors (scripts, iframes and similar markup are removed).
-
-```bash
 
 ### REST API
 
