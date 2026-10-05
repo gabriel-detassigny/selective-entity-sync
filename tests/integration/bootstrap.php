@@ -15,7 +15,6 @@ if ( ! $selective_entity_sync_tests_dir ) {
 }
 
 if ( ! file_exists( $selective_entity_sync_tests_dir . '/includes/functions.php' ) ) {
-	// phpcs:ignore WordPressVIPMinimum.Functions.RestrictedFunctions.file_ops_fwrite -- CLI error output before WordPress is loaded.
 	fwrite( STDERR, "Could not find the WordPress test suite. Run integration tests with `npm run test:php`.\n" );
 	exit( 1 );
 }

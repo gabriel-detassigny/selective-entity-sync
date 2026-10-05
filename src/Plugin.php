@@ -9,6 +9,7 @@ namespace SelectiveEntitySync;
 
 use SelectiveEntitySync\Admin\AdminPage;
 use SelectiveEntitySync\Contracts\Hookable;
+use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
 use SelectiveEntitySync\Support\I18n;
 
@@ -97,6 +98,7 @@ class Plugin {
 		return array(
 			$i18n,
 			new AdminPage( $this->plugin_file, $capabilities, $i18n ),
+			new TempStorage(),
 		);
 	}
 }

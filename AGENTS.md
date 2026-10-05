@@ -55,7 +55,12 @@ src/                        PHP, PSR-4 namespace SelectiveEntitySync\
   Contracts/                Interfaces (Hookable, collectors, handlers, rewriters…).
   Support/                  Cross-cutting helpers (Capabilities, I18n).
   Admin/                    Admin screen that hosts the React app.
-  Identity/ Manifest/ Export/ Import/ Rest/ Cli/   Feature areas.
+  Exception/                SyncException, the base for all plugin exceptions (messages are translated).
+  Identity/                 Entity UUIDs (meta `_selective_entity_sync_uuid`) and lookup by UUID.
+  Manifest/                 Manifest model, schema validation, JSON codec, safe package paths.
+  Package/                  Zip writer and reader (all untrusted-input checks live in PackageReader).
+  Storage/                  Temporary working directories under get_temp_dir(), with daily cleanup.
+  Export/ Import/ Rest/ Cli/   Upcoming feature areas.
 src-js/                     React admin app (built by @wordpress/scripts to build/).
 tests/unit/                 PHPUnit + Brain Monkey. No WordPress loaded.
 tests/integration/          PHPUnit + WP test suite, runs inside wp-env.

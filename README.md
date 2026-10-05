@@ -137,6 +137,59 @@ add_filter( 'selective_entity_sync_capability', function () {
 } );
 ```
 
+#### `selective_entity_sync_manifest_data`
+
+Filters the manifest data just before it's written to a package. Use it to add custom data to entities or to the manifest. The `files` list is managed by the plugin, so changes to it are ignored, and the result must still be a valid manifest.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$data` | `array` | Manifest data: `schema_version`, `generator`, `source`, `entities`, `files`. |
+| `$manifest` | `SelectiveEntitySync\Manifest\Manifest` | The manifest being written. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_manifest_data', function ( array $data ) {
+	foreach ( $data['entities'] as &$entity ) {
+		$entity['data']['exported_by'] = 'deploy-bot';
+	}
+	return $data;
+} );
+```
+
+#### `selective_entity_sync_package_limits`
+
+Filters the limits enforced when reading an uploaded package. Invalid or non-positive values fall back to the defaults.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$limits` | `array` | `max_package_size` (bytes, default 512 MB), `max_manifest_size` (bytes, default 64 MB), `max_entries` (files in the zip, default 20000), `max_uncompressed_size` (bytes, default 2 GB). |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_package_limits', function ( array $limits ) {
+	$limits['max_package_size'] = 2 * GB_IN_BYTES;
+	return $limits;
+} );
+```
+
+#### `selective_entity_sync_temp_file_lifetime`
+
+Filters how long temporary working directories (packages being built or extracted) are kept before the daily cleanup deletes them.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$lifetime` | `int` | Lifetime in seconds. Default `DAY_IN_SECONDS`. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_temp_file_lifetime', function () {
+	return 6 * HOUR_IN_SECONDS;
+} );
+```
+
 ## Development
 
 Requirements: PHP 7.4+, Composer, Node.js 22+ (24 recommended, see `.nvmrc`), and Docker (or Podman with the Docker-compatible socket) for [`wp-env`](https://developer.wordpress.org/block-editor/reference-guides/packages/packages-env/).

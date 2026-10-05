@@ -5,6 +5,7 @@
 	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
 	bootstrap="tests/integration/bootstrap.php"
 	colors="true"
+	cacheResult="false"
 	convertDeprecationsToExceptions="true"
 >
 	<testsuites>

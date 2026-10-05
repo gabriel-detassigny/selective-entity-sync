@@ -58,6 +58,8 @@ if (
 
 require_once __DIR__ . '/vendor/autoload.php';
 
+register_deactivation_hook( __FILE__, array( \SelectiveEntitySync\Storage\TempStorage::class, 'unschedule_cleanup' ) );
+
 add_action(
 	'plugins_loaded',
 	static function () {
