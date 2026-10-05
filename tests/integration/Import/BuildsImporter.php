@@ -25,6 +25,7 @@ use SelectiveEntitySync\Package\Package;
 use SelectiveEntitySync\Package\PackageLimits;
 use SelectiveEntitySync\Package\PackageReader;
 use SelectiveEntitySync\Storage\TempStorage;
+use SelectiveEntitySync\Support\ObjectPermissions;
 
 /**
  * Builds an Importer wired like the plugin does, and reads packages.
@@ -43,14 +44,15 @@ trait BuildsImporter {
 		$meta     = new MetaImporter( $settings );
 		$authors  = new AuthorResolver();
 		$map      = new BlockReferenceMap();
+		$perms    = new ObjectPermissions();
 
 		return new Importer(
 			new ImportPlanner(
 				new EntityUuid(),
 				array(
-					new PostHandler( $settings, $meta, $authors, new ContentReferenceFinder( $map ), new ContentRewriter( $map ) ),
-					new AttachmentHandler( $meta, $authors ),
-					new TermHandler( $meta ),
+					new PostHandler( $settings, $meta, $authors, new ContentReferenceFinder( $map ), new ContentRewriter( $map ), $perms ),
+					new AttachmentHandler( $meta, $authors, $perms ),
+					new TermHandler( $meta, $perms ),
 				)
 			),
 			new EntityUuid()

@@ -112,6 +112,8 @@ languages/                  .pot / translations.
 - Every REST route has a real `permission_callback`. Never use `__return_true` on mutating routes.
 - Sanitize and validate early, escape late. Treat manifest contents as **untrusted input**: validate the schema, and guard against zip-slip, oversized or too-deep JSON and unexpected file types.
 - Use `$wpdb->prepare()` for any direct query (prefer core APIs over direct queries).
+- Per-object rights go through `Support\ObjectPermissions` (read on export; create/edit/publish/author/terms/media on import). The plugin capability alone is not enough once a site lowers it.
+- Import must never write non-content post types or arbitrary statuses: validate against `ExportSettings`.
 
 ### Internationalization
 

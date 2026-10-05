@@ -16,6 +16,7 @@ use SelectiveEntitySync\Import\EntityMatch;
 use SelectiveEntitySync\Import\ImportContext;
 use SelectiveEntitySync\Import\ImportException;
 use SelectiveEntitySync\Import\MetaImporter;
+use SelectiveEntitySync\Support\ObjectPermissions;
 use WP_Error;
 use WP_Post;
 
@@ -60,20 +61,29 @@ class PostHandler implements ImportHandler {
 	private $rewriter;
 
 	/**
+	 * Per-object permissions.
+	 *
+	 * @var ObjectPermissions
+	 */
+	private $permissions;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param ExportSettings         $settings Export settings.
-	 * @param MetaImporter           $meta     Meta importer.
-	 * @param AuthorResolver         $authors  Author resolver.
-	 * @param ContentReferenceFinder $finder   Content reference finder.
-	 * @param ContentRewriter        $rewriter Content rewriter.
+	 * @param ExportSettings         $settings    Export settings.
+	 * @param MetaImporter           $meta        Meta importer.
+	 * @param AuthorResolver         $authors     Author resolver.
+	 * @param ContentReferenceFinder $finder      Content reference finder.
+	 * @param ContentRewriter        $rewriter    Content rewriter.
+	 * @param ObjectPermissions      $permissions Per-object permissions.
 	 */
-	public function __construct( ExportSettings $settings, MetaImporter $meta, AuthorResolver $authors, ContentReferenceFinder $finder, ContentRewriter $rewriter ) {
-		$this->settings = $settings;
-		$this->meta     = $meta;
-		$this->authors  = $authors;
-		$this->finder   = $finder;
-		$this->rewriter = $rewriter;
+	public function __construct( ExportSettings $settings, MetaImporter $meta, AuthorResolver $authors, ContentReferenceFinder $finder, ContentRewriter $rewriter, ObjectPermissions $permissions ) {
+		$this->settings    = $settings;
+		$this->meta        = $meta;
+		$this->authors     = $authors;
+		$this->finder      = $finder;
+		$this->rewriter    = $rewriter;
+		$this->permissions = $permissions;
 	}
 
 	/**
@@ -96,10 +106,19 @@ class PostHandler implements ImportHandler {
 	public function get_validation_error( array $entity ): ?string {
 		$post_type = (string) ( $entity['data']['post_type'] ?? '' );
 
-		if ( '' === $post_type || ! post_type_exists( $post_type ) || 'attachment' === $post_type ) {
+		if ( '' === $post_type || ! post_type_exists( $post_type ) ) {
 			return sprintf(
 				/* translators: %s: Post type name. */
 				__( 'The post type "%s" is not registered on this site.', 'selective-entity-sync' ),
+				$post_type
+			);
+		}
+
+		// Only content types can be imported: never templates, styles, changesets or revisions.
+		if ( ! in_array( $post_type, $this->settings->get_exportable_post_types(), true ) ) {
+			return sprintf(
+				/* translators: %s: Post type name. */
+				__( 'Content of type "%s" cannot be imported on this site.', 'selective-entity-sync' ),
 				$post_type
 			);
 		}
@@ -177,8 +196,7 @@ class PostHandler implements ImportHandler {
 	public function import( array $entity, ?int $local_id, ImportContext $context ): int {
 		$data     = $entity['data'];
 		$existing = null !== $local_id ? get_post( $local_id ) : null;
-		$statuses = get_post_stati();
-		$status   = isset( $statuses[ $data['post_status'] ?? '' ] ) ? (string) $data['post_status'] : 'draft';
+		$status   = in_array( $data['post_status'] ?? '', $this->settings->get_exportable_statuses(), true ) ? (string) $data['post_status'] : 'draft';
 
 		$postarr = array(
 			'post_type'      => (string) $data['post_type'],
@@ -196,6 +214,16 @@ class PostHandler implements ImportHandler {
 			'post_parent'    => $context->get_local_id( $entity['relations']['parent'] ?? null ) ?? 0,
 			'post_author'    => $this->authors->resolve( $entity['relations']['author'] ?? null, $existing instanceof WP_Post ? (int) $existing->post_author : 0 ),
 		);
+
+		if ( ! $this->permissions->can_write_post( $postarr['post_type'], $status, $existing instanceof WP_Post ? $existing->ID : null, $postarr['post_author'] ) ) {
+			throw new ImportException(
+				sprintf(
+					/* translators: %s: Post title. */
+					__( 'You are not allowed to create or edit "%s".', 'selective-entity-sync' ),
+					$postarr['post_title']
+				)
+			);
+		}
 
 		if ( $existing instanceof WP_Post ) {
 			$postarr['ID']        = $existing->ID;

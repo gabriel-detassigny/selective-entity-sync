@@ -11,6 +11,7 @@ use SelectiveEntitySync\Import\EntityMatch;
 use SelectiveEntitySync\Import\ImportContext;
 use SelectiveEntitySync\Import\ImportException;
 use SelectiveEntitySync\Import\MetaImporter;
+use SelectiveEntitySync\Support\ObjectPermissions;
 use WP_Error;
 use WP_Term;
 
@@ -27,12 +28,21 @@ class TermHandler implements ImportHandler {
 	private $meta;
 
 	/**
+	 * Per-object permissions.
+	 *
+	 * @var ObjectPermissions
+	 */
+	private $permissions;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param MetaImporter $meta Meta importer.
+	 * @param MetaImporter      $meta        Meta importer.
+	 * @param ObjectPermissions $permissions Per-object permissions.
 	 */
-	public function __construct( MetaImporter $meta ) {
-		$this->meta = $meta;
+	public function __construct( MetaImporter $meta, ObjectPermissions $permissions ) {
+		$this->meta        = $meta;
+		$this->permissions = $permissions;
 	}
 
 	/**
@@ -96,6 +106,16 @@ class TermHandler implements ImportHandler {
 			'description' => (string) ( $data['description'] ?? '' ),
 			'parent'      => $context->get_local_id( $entity['relations']['parent'] ?? null ) ?? 0,
 		);
+
+		if ( ! $this->permissions->can_write_term( $taxonomy, $local_id ) ) {
+			throw new ImportException(
+				sprintf(
+					/* translators: %s: Term name. */
+					__( 'You are not allowed to create or edit the term "%s".', 'selective-entity-sync' ),
+					(string) $data['name']
+				)
+			);
+		}
 
 		if ( null !== $local_id ) {
 			$args['name'] = (string) $data['name'];

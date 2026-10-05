@@ -41,6 +41,7 @@ class ExporterTest extends WP_UnitTestCase {
 	public function set_up(): void {
 		parent::set_up();
 		$this->uuids = new EntityUuid();
+		wp_set_current_user( self::factory()->user->create( array( 'role' => 'administrator' ) ) );
 	}
 
 	public function tear_down(): void {

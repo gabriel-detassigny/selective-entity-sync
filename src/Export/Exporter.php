@@ -12,6 +12,7 @@ use SelectiveEntitySync\Identity\EntityUuid;
 use SelectiveEntitySync\Manifest\Manifest;
 use SelectiveEntitySync\Package\PackageWriter;
 use SelectiveEntitySync\Storage\TempStorage;
+use SelectiveEntitySync\Support\ObjectPermissions;
 use Throwable;
 use WP_Post;
 
@@ -74,6 +75,13 @@ class Exporter {
 	private $plugin_version;
 
 	/**
+	 * Per-object permissions.
+	 *
+	 * @var ObjectPermissions
+	 */
+	private $permissions;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param ExportSettings    $settings       Export settings.
@@ -82,14 +90,16 @@ class Exporter {
 	 * @param PackageWriter     $writer         Package writer.
 	 * @param TempStorage       $storage        Temporary storage.
 	 * @param string            $plugin_version Plugin version.
+	 * @param ObjectPermissions $permissions    Per-object permissions.
 	 */
-	public function __construct( ExportSettings $settings, EntityUuid $uuids, array $collectors, PackageWriter $writer, TempStorage $storage, string $plugin_version ) {
+	public function __construct( ExportSettings $settings, EntityUuid $uuids, array $collectors, PackageWriter $writer, TempStorage $storage, string $plugin_version, ObjectPermissions $permissions ) {
 		$this->settings       = $settings;
 		$this->uuids          = $uuids;
 		$this->collectors     = $collectors;
 		$this->writer         = $writer;
 		$this->storage        = $storage;
 		$this->plugin_version = $plugin_version;
+		$this->permissions    = $permissions;
 	}
 
 	/**
@@ -227,6 +237,11 @@ class Exporter {
 	 * @return bool
 	 */
 	private function should_include( EntityReference $dependency, ExportContext $context ): bool {
+		// Content the user can't read is only referenced, never bundled.
+		if ( EntityReference::POST === $dependency->get_object_type() && ! $this->permissions->can_read_post( $dependency->get_id() ) ) {
+			return false;
+		}
+
 		/**
 		 * Filters whether a dependency is bundled in the package or only referenced.
 		 *
@@ -321,11 +336,11 @@ class Exporter {
 		foreach ( $post_ids as $post_id ) {
 			$post = $post_id > 0 ? get_post( $post_id ) : null;
 
-			if ( ! $post instanceof WP_Post || ! in_array( $post->post_type, $post_types, true ) || ! in_array( $post->post_status, $statuses, true ) ) {
+			if ( ! $post instanceof WP_Post || ! in_array( $post->post_type, $post_types, true ) || ! in_array( $post->post_status, $statuses, true ) || ! $this->permissions->can_read_post( $post_id ) ) {
 				throw new ExportException(
 					sprintf(
 						/* translators: %d: Post ID. */
-						__( 'Item #%d cannot be exported: it does not exist, or its type or status is not exportable.', 'selective-entity-sync' ),
+						__( 'Item #%d cannot be exported: it does not exist, its type or status is not exportable, or you are not allowed to export it.', 'selective-entity-sync' ),
 						$post_id
 					)
 				);

@@ -74,6 +74,9 @@ class TempStorage implements Hookable {
 			throw new SyncException( __( 'A temporary working directory could not be created.', 'selective-entity-sync' ) );
 		}
 
+		// Packages hold unpublished content: keep them private to this system user (shared hosting).
+		$this->filesystem()->chmod( $directory, 0700 );
+
 		return $directory;
 	}
 

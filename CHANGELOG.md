@@ -24,4 +24,5 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Admin: Import tab with package upload, a preview where items can be deselected, and a result report with edit links.
 - REST: `POST /import/packages`, `GET|DELETE /import/packages/{token}`, `POST /import/packages/{token}/import`. WP-CLI: `wp selective-entity-sync import <file> [--dry-run] [--skip=…]`.
 - Import hooks: `before_import`, `entity_imported`, `import_failed`, `after_import` actions; `import_handlers`, `match_existing_entity`, `import_action`, `import_entity_data`, `import_author`, `replace_site_url` filters.
+- Security: import only writes exportable content types and statuses; per-item permission checks on export (read) and import (create, edit, publish, author, terms, media) when the plugin capability is lowered; temporary directories are private (0700); uninstall removes pending uploads.
 - Tooling: wp-env, PHPCS (WordPress VIP), PHPStan, PHPUnit (unit + integration), Playwright e2e, GitHub Actions CI.

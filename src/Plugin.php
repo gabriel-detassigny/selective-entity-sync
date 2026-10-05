@@ -40,6 +40,7 @@ use SelectiveEntitySync\Rest\ImportController;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
 use SelectiveEntitySync\Support\I18n;
+use SelectiveEntitySync\Support\ObjectPermissions;
 
 /**
  * Builds the plugin services and registers their hooks.
@@ -130,6 +131,7 @@ class Plugin {
 		$block_map    = new BlockReferenceMap();
 		$finder       = new ContentReferenceFinder( $block_map );
 		$meta         = new MetaCollector( $settings );
+		$permissions  = new ObjectPermissions();
 		$exporter     = new Exporter(
 			$settings,
 			$uuids,
@@ -140,7 +142,8 @@ class Plugin {
 			),
 			new PackageWriter( $codec, $schema ),
 			$storage,
-			$this->version
+			$this->version,
+			$permissions
 		);
 
 		$meta_importer = new MetaImporter( $settings );
@@ -149,9 +152,9 @@ class Plugin {
 			new ImportPlanner(
 				$uuids,
 				array(
-					new PostHandler( $settings, $meta_importer, $authors, $finder, new ContentRewriter( $block_map ) ),
-					new AttachmentHandler( $meta_importer, $authors ),
-					new TermHandler( $meta_importer ),
+					new PostHandler( $settings, $meta_importer, $authors, $finder, new ContentRewriter( $block_map ), $permissions ),
+					new AttachmentHandler( $meta_importer, $authors, $permissions ),
+					new TermHandler( $meta_importer, $permissions ),
 				)
 			),
 			$uuids

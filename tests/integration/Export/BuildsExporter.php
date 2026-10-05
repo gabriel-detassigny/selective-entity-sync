@@ -20,6 +20,7 @@ use SelectiveEntitySync\Manifest\ManifestCodec;
 use SelectiveEntitySync\Manifest\Schema;
 use SelectiveEntitySync\Package\PackageWriter;
 use SelectiveEntitySync\Storage\TempStorage;
+use SelectiveEntitySync\Support\ObjectPermissions;
 
 /**
  * Builds an Exporter wired like the plugin does.
@@ -41,7 +42,8 @@ trait BuildsExporter {
 			),
 			new PackageWriter( new ManifestCodec( $schema ), $schema ),
 			new TempStorage(),
-			'0.1.0-test'
+			'0.1.0-test',
+			new ObjectPermissions()
 		);
 	}
 

@@ -12,6 +12,7 @@ use SelectiveEntitySync\Import\EntityMatch;
 use SelectiveEntitySync\Import\ImportContext;
 use SelectiveEntitySync\Import\ImportException;
 use SelectiveEntitySync\Import\MetaImporter;
+use SelectiveEntitySync\Support\ObjectPermissions;
 use WP_Error;
 use WP_Post;
 
@@ -41,14 +42,23 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 	private $authors;
 
 	/**
+	 * Per-object permissions.
+	 *
+	 * @var ObjectPermissions
+	 */
+	private $permissions;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param MetaImporter   $meta    Meta importer.
-	 * @param AuthorResolver $authors Author resolver.
+	 * @param MetaImporter      $meta        Meta importer.
+	 * @param AuthorResolver    $authors     Author resolver.
+	 * @param ObjectPermissions $permissions Per-object permissions.
 	 */
-	public function __construct( MetaImporter $meta, AuthorResolver $authors ) {
-		$this->meta    = $meta;
-		$this->authors = $authors;
+	public function __construct( MetaImporter $meta, AuthorResolver $authors, ObjectPermissions $permissions ) {
+		$this->meta        = $meta;
+		$this->authors     = $authors;
+		$this->permissions = $permissions;
 	}
 
 	/**
@@ -141,6 +151,16 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 	 */
 	public function import( array $entity, ?int $local_id, ImportContext $context ): int {
 		$this->load_media_api();
+
+		if ( ! $this->permissions->can_write_media( $local_id ) ) {
+			throw new ImportException(
+				sprintf(
+					/* translators: %s: Media title. */
+					__( 'You are not allowed to upload or edit the media "%s".', 'selective-entity-sync' ),
+					(string) ( $entity['data']['post_title'] ?? '' )
+				)
+			);
+		}
 
 		$data     = $entity['data'];
 		$package  = $context->get_package();

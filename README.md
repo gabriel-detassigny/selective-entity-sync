@@ -14,6 +14,7 @@ Selective Entity Sync is a WordPress plugin for moving content changes safely be
 - [How it works](#how-it-works)
 - [What gets synced](#what-gets-synced)
 - [Limitations](#limitations)
+- [Security](#security)
 - [Requirements](#requirements)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -67,6 +68,29 @@ Content that isn't in the manifest is never touched.
 - **Users, comments, orders and other non-content data are intentionally never synced.**
 - Very large packages may hit PHP upload, memory or time limits: imports run in a single request. Use WP-CLI for big imports.
 - The Export table's selection applies to the current page of results (use up to 100 items per page).
+
+## Security
+
+- **Who can sync.** Only users with `manage_options` (administrators) by default; see [`selective_entity_sync_capability`](#selective_entity_sync_capability). If you lower it, per-item WordPress permissions still apply. Users can only export content they can read, and only import what they could create or edit by hand. That covers creating each content type, publishing, attributing content to other users, managing terms and uploading media. WP-CLI runs are trusted, like WordPress's own CLI commands.
+- **Only import packages you trust.** A package is content from another site. Imported content goes through WordPress's usual filtering for users without the `unfiltered_html` capability (e.g. multisite administrators). Only content types can be written: never templates, global styles, navigation menus or other site configuration.
+- **Uploaded packages** are checked before anything is extracted:
+  - size and file-count limits;
+  - only the files listed in the manifest, with safe paths;
+  - file types WordPress allows for uploads;
+  - checksums.
+
+  Between upload and import they're kept in `wp-content/uploads/selective-entity-sync-packages/` with random names, and are only accessible to the uploader. They're deleted after import, on cancel, or after a day. The folder blocks web access with an `.htaccess` file, which only Apache honours. **On nginx**, add:
+
+  ```nginx
+  location ^~ /wp-content/uploads/selective-entity-sync-packages/ {
+  	deny all;
+  }
+  ```
+
+- **Temporary files** (packages being built or extracted) live in the system temp directory, readable only by the web server's user, and are cleaned up daily.
+- **Uninstalling** removes temporary files and pending uploads. Imported content, and the UUIDs that link it across sites, are kept.
+
+Found a vulnerability? Please report it privately to the maintainer rather than opening a public issue.
 
 ## Requirements
 
@@ -640,7 +664,7 @@ What's left before the first public release. Items are ticked as they land on `m
 
 - [x] Round-trip tests: export, alter the target, import, assert every reference is remapped and unrelated content is untouched (integration test for all reference types, Playwright for the UI flow)
 - [x] Automated dependency updates and vulnerability alerts (Dependabot for Composer, npm and GitHub Actions; `composer audit` and `npm audit` in CI)
-- [ ] Security review of all entry points (REST, uploads, WP-CLI)
+- [x] Security review of all entry points (REST, uploads, WP-CLI)
 - [ ] Translation files: generate the `.pot` and the JS translation JSON, and check with a non-English locale
 
 ### Release
