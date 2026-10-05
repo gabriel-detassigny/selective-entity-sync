@@ -159,6 +159,19 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 | End-to-end tests | `npm run test:e2e` |
 | Generate translation template | `npm run makepot` |
 
+**Accessing the dev site from another machine.** If wp-env runs on a VM or remote box, WordPress's default `localhost` URLs won't work from your own browser. Point the dev site at a hostname in the gitignored `.wp-env.override.json`, then run `npm run wp-env start -- --update`:
+
+```json
+{
+  "config": {
+    "WP_HOME": "http://mysite.wpenv.net:8898",
+    "WP_SITEURL": "http://mysite.wpenv.net:8898"
+  }
+}
+```
+
+On the machine running the browser, map the hostname to the VM's IP in `/etc/hosts` (e.g. `192.168.1.50 mysite.wpenv.net`). `*.wpenv.net` resolves to `127.0.0.1` everywhere else, so WordPress's requests to itself (WP-Cron, REST API) keep working inside the container. Keep the test site on `localhost`, because Playwright runs on the same machine as wp-env. SSH port forwarding (`ssh -L 8898:localhost:8898 <vm>`) is an alternative that needs no config change.
+
 > **Podman users:** with rootless Podman, `wp-content` inside the containers can end up owned by root, so WordPress can't create `wp-content/uploads`. Create it once after the first `wp-env start` of each site:
 >
 > ```bash
