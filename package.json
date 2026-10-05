@@ -1,0 +1,54 @@
+{
+  "name": "selective-entity-sync",
+  "version": "0.1.0-dev",
+  "private": true,
+  "description": "Push selected WordPress content from staging to production via entity manifests, with automatic ID remapping.",
+  "license": "GPL-2.0-or-later",
+  "author": "Gabriel de Tassigny",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gabriel-detassigny/selective-entity-sync.git"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "files": [
+    "build",
+    "languages",
+    "src",
+    "vendor",
+    "selective-entity-sync.php",
+    "uninstall.php",
+    "readme.txt",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "wp-scripts build src-js/index.js",
+    "start": "wp-scripts start src-js/index.js",
+    "lint": "npm run lint:js && npm run lint:css",
+    "lint:js": "wp-scripts lint-js src-js tests/e2e playwright.config.js",
+    "lint:css": "wp-scripts lint-style \"src-js/**/*.scss\" --allow-empty-input",
+    "format": "wp-scripts format src-js tests/e2e",
+    "wp-env": "wp-env",
+    "env:start": "wp-env start",
+    "env:stop": "wp-env stop",
+    "test:php": "wp-env run tests-cli --env-cwd=wp-content/plugins/selective-entity-sync vendor/bin/phpunit -c phpunit.xml.dist",
+    "test:e2e": "wp-scripts test-playwright",
+    "test:e2e:debug": "wp-scripts test-playwright --debug",
+    "makepot": "wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-pot . languages/selective-entity-sync.pot --exclude=node_modules,vendor,build,tests,src-js --domain=selective-entity-sync && wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-pot src-js languages/selective-entity-sync-js.pot --domain=selective-entity-sync --skip-php --merge=languages/selective-entity-sync.pot --subtract-and-merge",
+    "makejson": "wp-env run cli --env-cwd=wp-content/plugins/selective-entity-sync wp i18n make-json languages --no-purge",
+    "plugin-zip": "wp-scripts plugin-zip"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.63.0",
+    "@wordpress/e2e-test-utils-playwright": "^2.1.0",
+    "@wordpress/env": "^11.16.0",
+    "@wordpress/scripts": "^36.0.0"
+  },
+  "dependencies": {
+    "@wordpress/api-fetch": "^7.56.0",
+    "@wordpress/components": "^41.0.0",
+    "@wordpress/element": "^8.8.0",
+    "@wordpress/i18n": "^6.29.0"
+  }
+}

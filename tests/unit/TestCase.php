@@ -1,0 +1,27 @@
+<?php
+/**
+ * Base unit test case.
+ *
+ * @package SelectiveEntitySync
+ */
+
+namespace SelectiveEntitySync\Tests\Unit;
+
+use Brain\Monkey;
+use Yoast\PHPUnitPolyfills\TestCases\TestCase as PolyfillTestCase;
+
+/**
+ * Sets up and tears down Brain Monkey for every test.
+ */
+abstract class TestCase extends PolyfillTestCase {
+
+	protected function set_up(): void {
+		parent::set_up();
+		Monkey\setUp();
+	}
+
+	protected function tear_down(): void {
+		Monkey\tearDown();
+		parent::tear_down();
+	}
+}

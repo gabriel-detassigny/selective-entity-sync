@@ -1,0 +1,55 @@
+{
+  "name": "gabriel-detassigny/selective-entity-sync",
+  "description": "Push selected WordPress content (posts, terms, media) from staging to production via entity manifests, with automatic ID remapping.",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "Gabriel de Tassigny"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "require-dev": {
+    "automattic/vipwpcs": "^3.0",
+    "brain/monkey": "^2.6",
+    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
+    "phpcompatibility/phpcompatibility-wp": "^2.1",
+    "phpstan/extension-installer": "^1.4",
+    "phpunit/phpunit": "^9.6",
+    "szepeviktor/phpstan-wordpress": "^2.0",
+    "wp-coding-standards/wpcs": "^3.1",
+    "wp-phpunit/wp-phpunit": "^6.9",
+    "yoast/phpunit-polyfills": "^4.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "SelectiveEntitySync\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "SelectiveEntitySync\\Tests\\Unit\\": "tests/unit/",
+      "SelectiveEntitySync\\Tests\\Integration\\": "tests/integration/"
+    }
+  },
+  "config": {
+    "platform": {
+      "php": "7.4.33"
+    },
+    "sort-packages": true,
+    "optimize-autoloader": true,
+    "allow-plugins": {
+      "dealerdirect/phpcodesniffer-composer-installer": true,
+      "phpstan/extension-installer": true
+    }
+  },
+  "scripts": {
+    "lint": "phpcs",
+    "lint:fix": "phpcbf",
+    "analyse": "phpstan analyse --memory-limit=1G",
+    "test:unit": "phpunit -c phpunit-unit.xml.dist",
+    "test:integration": "phpunit -c phpunit.xml.dist"
+  }
+}

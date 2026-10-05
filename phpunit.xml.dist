@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!-- Integration tests: run inside wp-env (`npm run test:php`) against the WordPress test suite. -->
+<phpunit
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+	bootstrap="tests/integration/bootstrap.php"
+	colors="true"
+	convertDeprecationsToExceptions="true"
+>
+	<testsuites>
+		<testsuite name="integration">
+			<directory suffix="Test.php">tests/integration</directory>
+		</testsuite>
+	</testsuites>
+	<coverage>
+		<include>
+			<directory suffix=".php">src</directory>
+		</include>
+	</coverage>
+</phpunit>

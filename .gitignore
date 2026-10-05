@@ -1,0 +1,43 @@
+# Dependencies
+/vendor/
+/node_modules/
+
+# Build output
+/build/
+/artifacts/
+/test-results/
+/playwright-report/
+/blob-report/
+*.zip
+.phpunit.result.cache
+.phpcs-cache
+/tests/e2e/.auth/
+
+# Local environment
+.wp-env.override.json
+.env
+.DS_Store
+Thumbs.db
+*.log
+
+# Internal / private planning docs
+/.internal/
+
+# AI tooling (only AGENTS.md and CLAUDE.md are committed)
+.claude/
+CLAUDE.local.md
+.cursor/
+.cursorrules
+.windsurf/
+.windsurfrules
+.aider*
+.codex/
+.gemini/
+GEMINI.md
+.github/copilot-instructions.md
+.continue/
+.ai/
+.junie/
+.kiro/
+.roo/
+.clinerules

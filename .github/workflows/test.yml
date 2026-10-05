@@ -1,0 +1,68 @@
+name: PHP tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  unit:
+    name: Unit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.3' ]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      - run: composer test:unit
+
+  integration:
+    name: Integration (PHP ${{ matrix.php }}, WP ${{ matrix.wp }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        php: [ '7.4', '8.3' ]
+        wp: [ '6.9', 'latest' ]
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - uses: ramsey/composer-install@v3
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - name: Configure wp-env
+        run: |
+          if [ "${{ matrix.wp }}" = "latest" ]; then CORE=null; else CORE="\"WordPress/WordPress#${{ matrix.wp }}\""; fi
+          echo "{ \"core\": ${CORE}, \"phpVersion\": \"${{ matrix.php }}\" }" > .wp-env.override.json
+          cat .wp-env.override.json
+
+      - run: npm run wp-env start
+
+      - run: npm run test:php

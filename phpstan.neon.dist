@@ -1,0 +1,11 @@
+parameters:
+  level: 6
+  phpVersion: 70400
+  # Filter return values only *claim* their type in docblocks; keep defensive checks meaningful.
+  treatPhpDocTypesAsCertain: false
+  paths:
+    - selective-entity-sync.php
+    - uninstall.php
+    - src/
+  bootstrapFiles:
+    - tests/phpstan-bootstrap.php
