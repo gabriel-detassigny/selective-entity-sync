@@ -225,14 +225,6 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 
 On the machine running the browser, map the hostname to the VM's IP in `/etc/hosts` (e.g. `192.168.1.50 mysite.wpenv.net`). `*.wpenv.net` resolves to `127.0.0.1` everywhere else, so WordPress's requests to itself (WP-Cron, REST API) keep working inside the container. Keep the test site on `localhost`, because Playwright runs on the same machine as wp-env. SSH port forwarding (`ssh -L 8898:localhost:8898 <vm>`) is an alternative that needs no config change.
 
-> **Podman users:** with rootless Podman, `wp-content` inside the containers can end up owned by root, so WordPress can't create `wp-content/uploads`. Create it once after the first `wp-env start` of each site:
->
-> ```bash
-> for c in $(podman ps --format '{{.Names}}' | grep wp-env-selective-entity-sync | grep -E 'wordpress-1|cli-1'); do
->   podman exec -u root "$c" sh -c 'mkdir -p /var/www/html/wp-content/uploads && chown 1000:1000 /var/www/html/wp-content/uploads'
-> done
-> ```
-
 Contributor and agent guidelines live in [`AGENTS.md`](AGENTS.md).
 
 ## License
