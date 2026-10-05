@@ -18,6 +18,7 @@ Selective Entity Sync is a WordPress plugin for moving content changes safely be
 - [Installation](#installation)
 - [Usage](#usage)
 - [Hooks reference](#hooks-reference)
+- [Roadmap to launch](#roadmap-to-launch)
 - [Development](#development)
 - [License](#license)
 
@@ -189,6 +190,57 @@ add_filter( 'selective_entity_sync_temp_file_lifetime', function () {
 	return 6 * HOUR_IN_SECONDS;
 } );
 ```
+
+## Roadmap to launch
+
+What's left before the first public release. Items are ticked as they land on `main`.
+
+### Export
+
+- [ ] REST endpoint listing selectable content (search, filter by post type and status)
+- [ ] Dependency resolution: parent posts, terms and their ancestors, featured images, media used in blocks and `[gallery]` shortcodes, ID-bearing post meta
+- [ ] Post, term and attachment collectors, with author info exported as login and email (mapped on import)
+- [ ] Default excluded meta keys (`_edit_lock`, `_edit_last`, `_wp_old_slug`, …), filterable
+- [ ] Export REST endpoint returning the package as a download
+- [ ] WP-CLI: `wp selective-entity-sync export`
+
+### Import
+
+- [ ] Package upload, validation and storage between requests
+- [ ] Preview (dry run): what will be created, updated or skipped, and why
+- [ ] Matching existing content by UUID, falling back to natural keys (post type + slug, taxonomy + slug, file hash)
+- [ ] Ordered import (terms → media → posts) building a UUID → local ID map
+- [ ] Reference rewriting: block attributes (`id`, `ids`, `mediaId`, …), `wp-image-N` classes, `[gallery ids]`, `_thumbnail_id`, post and term parents, ID-bearing meta
+- [ ] Media import: file sideloading, regenerated image sizes, deduplication
+- [ ] Conflict strategies (update / skip / duplicate), filterable per entity
+- [ ] Batched processing for large packages
+- [ ] Import REST endpoints (preview, run)
+- [ ] WP-CLI: `wp selective-entity-sync import <file> [--dry-run]`
+
+### Admin UI
+
+- [ ] Export tab: DataViews table with search, filters and multi-select, dependency summary, download
+- [ ] Import tab: upload, preview table, confirmation, progress, result report
+
+### Extensibility
+
+- [ ] Export and import lifecycle hooks (`before_export`, `after_export`, `before_import`, `after_import`, `entity_imported`, `import_failed`)
+- [ ] Filterable registries for collectors, import handlers and reference rewriters
+- [ ] Abilities API integration (WordPress 6.9+) for export, preview and import (optional)
+
+### Quality and maintenance
+
+- [ ] End-to-end round-trip test: export, alter the target, import, assert every reference is remapped and unrelated content is untouched
+- [ ] Automated dependency updates and vulnerability alerts (Composer, npm, GitHub Actions)
+- [ ] Security review of all entry points (REST, uploads, WP-CLI)
+- [ ] Translation files: generate the `.pot` and the JS translation JSON, and check with a non-English locale
+
+### Release
+
+- [ ] Finalise docs: `readme.txt` (FAQ, limitations such as ACF and SVG), `CONTRIBUTING.md`, screenshots
+- [ ] Tag `v0.1.0` and publish the zip to GitHub Releases
+- [ ] Make the GitHub repository public
+- [ ] Submit to the WordPress.org plugin directory (Plugin Check, review, SVN deployment workflow)
 
 ## Development
 
