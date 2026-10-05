@@ -31,14 +31,16 @@ trait ManifestFixtures {
 				),
 				'entities'       => array(
 					array(
-						'uuid' => '3f2b8c1e-4a5d-4e6f-8a9b-0c1d2e3f4a5b',
-						'type' => 'post',
-						'data' => array( 'post_title' => 'Hello' ),
+						'uuid'      => '3f2b8c1e-4a5d-4e6f-8a9b-0c1d2e3f4a5b',
+						'type'      => 'post',
+						'source_id' => 1,
+						'data'      => array( 'post_title' => 'Hello' ),
 					),
 					array(
-						'uuid' => '9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d',
-						'type' => 'term',
-						'data' => array( 'name' => 'News' ),
+						'uuid'      => '9a8b7c6d-5e4f-4a3b-9c2d-1e0f9a8b7c6d',
+						'type'      => 'term',
+						'source_id' => 1,
+						'data'      => array( 'name' => 'News' ),
 					),
 				),
 				'files'          => array(

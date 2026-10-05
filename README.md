@@ -38,7 +38,7 @@ Selective Entity Sync moves only what you choose, and fixes up those references 
 ## How it works
 
 1. **Select.** On the source site, pick the posts/pages/CPT entries to sync from **Tools → Selective Entity Sync → Export**.
-2. **Resolve dependencies.** The plugin follows references from your selection: parent posts, terms and their ancestors, featured images, and media used inside block content.
+2. **Resolve dependencies.** The plugin follows references from your selection: parent posts, terms and their ancestors, featured images, media and synced patterns used inside content, and ID-bearing meta. Dependencies are bundled automatically (see [`selective_entity_sync_include_dependency`](#selective_entity_sync_include_dependency) to change that).
 3. **Export.** You download a `.zip` package containing a versioned `manifest.json` and the media files.
 4. **Preview.** On the target site, upload the package under **Import**. A dry run shows what will be **created**, **updated** or **skipped**, before anything is written.
 5. **Import.**
@@ -52,7 +52,7 @@ Content that isn't in the manifest is never touched.
 
 | Entity | Included |
 |---|---|
-| Posts, pages, custom post types | Content, excerpt, status, dates, slug, post meta, parent/child relations, menu order |
+| Posts, pages, custom post types, synced patterns | Content, excerpt, status (drafts, scheduled and private included; never trash), dates, slug, post meta, parent/child relations, menu order, sticky flag |
 | Taxonomies and terms | Name, slug, description, hierarchy, term meta, post ↔ term relations |
 | Media attachments | The file itself, title/caption/alt text, attachment meta. Image sizes are regenerated on the target |
 | Authors | Mapped to an existing user by login/email (users are never created). Falls back to the importing user |
@@ -89,13 +89,26 @@ By default only users with the `manage_options` capability can access the screen
 
 ### WP-CLI
 
-_Coming soon._
-
 ```bash
+# See what an export would contain (selection + dependencies), without writing anything.
+wp selective-entity-sync export --post_ids=12,34 --dry-run
+
+# Export to a package.
 wp selective-entity-sync export --post_ids=12,34 --file=/tmp/sync.zip
-wp selective-entity-sync import /tmp/sync.zip --dry-run
-wp selective-entity-sync import /tmp/sync.zip
 ```
+
+Import commands (`wp selective-entity-sync import <file> [--dry-run]`) are coming soon.
+
+### REST API
+
+All routes live under `/wp-json/selective-entity-sync/v1` and need the capability returned by [`selective_entity_sync_capability`](#selective_entity_sync_capability).
+
+| Route | Description |
+|---|---|
+| `GET /entities` | Content that can be selected for export. Parameters: `search`, `post_type`, `status`, `page`, `per_page` (max 100), `orderby` (`modified`, `date`, `title`), `order`. |
+| `GET /export/options` | Exportable post types and statuses, with labels. |
+| `POST /export/preview` | `{ "post_ids": [12, 34] }`: what the export would contain (entities, files, warnings). |
+| `POST /export` | `{ "post_ids": [12, 34] }`: responds with the package zip file. |
 
 ## Hooks reference
 
@@ -116,6 +129,38 @@ Since `0.1.0`.
 ```php
 add_action( 'selective_entity_sync_loaded', function ( $plugin ) {
 	// Register custom collectors, handlers or rewriters here.
+} );
+```
+
+#### `selective_entity_sync_before_export`
+
+Fires before an export package is built.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$post_ids` | `int[]` | Selected post IDs. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_before_export', function ( array $post_ids ) {
+	error_log( 'Exporting ' . count( $post_ids ) . ' items.' );
+} );
+```
+
+#### `selective_entity_sync_after_export`
+
+Fires after an export package has been written, before it's delivered.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$result` | `SelectiveEntitySync\Export\ExportResult` | The manifest, package path and plan. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_after_export', function ( $result ) {
+	copy( $result->get_package_path(), WP_CONTENT_DIR . '/sync-archive/' . time() . '.zip' );
 } );
 ```
 
@@ -191,18 +236,179 @@ add_filter( 'selective_entity_sync_temp_file_lifetime', function () {
 } );
 ```
 
+#### `selective_entity_sync_exportable_post_types`
+
+Filters the post types whose content can be selected for export. Attachments are exported as dependencies of the content that uses them, so they aren't selectable.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$post_types` | `string[]` | Default: post types with an admin UI, minus templates, template parts, navigation, global styles and fonts. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_exportable_post_types', function ( array $post_types ) {
+	return array_diff( $post_types, array( 'product' ) );
+} );
+```
+
+#### `selective_entity_sync_exportable_statuses`
+
+Filters the post statuses that can be exported. `trash` and `auto-draft` are always removed.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$statuses` | `string[]` | Default: `publish`, `future`, `draft`, `pending`, `private`. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_exportable_statuses', function () {
+	return array( 'publish' );
+} );
+```
+
+#### `selective_entity_sync_exportable_taxonomies`
+
+Filters the taxonomies whose terms are exported with posts of a given type.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$taxonomies` | `string[]` | Default: all taxonomies registered for the post type. |
+| `$post_type` | `string` | Post type name. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_exportable_taxonomies', function ( array $taxonomies ) {
+	return array_diff( $taxonomies, array( 'post_format' ) );
+} );
+```
+
+#### `selective_entity_sync_excluded_meta_keys`
+
+Filters the meta keys that are never exported. The plugin's own UUID key is always excluded.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$keys` | `string[]` | Default for posts: `_edit_lock`, `_edit_last`, `_wp_old_slug`, `_wp_old_date`, trash bookkeeping keys, and the attachment file keys (`_wp_attached_file`, `_wp_attachment_metadata`, `_wp_attachment_backup_sizes`). None for terms. |
+| `$object_type` | `string` | `post` (including attachments) or `term`. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_excluded_meta_keys', function ( array $keys, string $object_type ) {
+	if ( 'post' === $object_type ) {
+		$keys[] = '_my_plugin_cache';
+	}
+	return $keys;
+}, 10, 2 );
+```
+
+#### `selective_entity_sync_id_reference_meta_keys`
+
+Filters the meta keys whose values are IDs of other posts or terms. The referenced entities are exported as dependencies, and the IDs are remapped to the target site's IDs on import. A value may be a single ID, a comma-separated list or an array of IDs.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$keys` | `array<string, string>` | Meta key => referenced object type (`post` or `term`). Default: `_thumbnail_id` => `post`. |
+| `$object_type` | `string` | Object type owning the meta: `post` or `term`. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_id_reference_meta_keys', function ( array $keys, string $object_type ) {
+	if ( 'post' === $object_type ) {
+		$keys['related_posts'] = 'post';
+		$keys['hero_image_id'] = 'post';
+	}
+	return $keys;
+}, 10, 2 );
+```
+
+#### `selective_entity_sync_block_reference_attributes`
+
+Filters which block attributes hold IDs of other posts (media, synced patterns, …). Referenced posts are exported as dependencies, and the attribute values are remapped on import.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$map` | `array<string, string[]>` | Block name => attribute names. Default covers `core/image`, `core/gallery`, `core/cover`, `core/media-text`, `core/video`, `core/audio`, `core/file` and `core/block`. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_block_reference_attributes', function ( array $map ) {
+	$map['acme/hero'] = array( 'imageId', 'galleryIds' );
+	return $map;
+} );
+```
+
+#### `selective_entity_sync_include_dependency`
+
+Filters whether a dependency is bundled in the package or only referenced. Reference-only entities are matched on the target site but never created there.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$include` | `bool` | Default `true`. |
+| `$dependency` | `SelectiveEntitySync\Export\EntityReference` | The dependency (`get_object_type()`, `get_id()`). |
+| `$required_by` | `SelectiveEntitySync\Export\EntityReference\|null` | The entity that first required it. |
+
+Since `0.1.0`.
+
+```php
+// Never bundle terms: expect them to exist on the target already.
+add_filter( 'selective_entity_sync_include_dependency', function ( bool $bundle, $dependency ) {
+	return 'term' === $dependency->get_object_type() ? false : $bundle;
+}, 10, 2 );
+```
+
+#### `selective_entity_sync_export_entity_data`
+
+Filters an entity before it's added to the export manifest. The entity must keep its `uuid`, `type`, `source_id` and `data` keys.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$entity` | `array` | Entity data: `uuid`, `type`, `source_id`, `data`, and depending on the type `relations`, `meta`, `file`. |
+| `$reference` | `SelectiveEntitySync\Export\EntityReference` | Local object the entity was built from. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_export_entity_data', function ( array $entity ) {
+	unset( $entity['meta']['_internal_notes'] );
+	return $entity;
+} );
+```
+
+#### `selective_entity_sync_collectors`
+
+Filters the entity collectors used to export content. The first collector whose `supports()` returns true handles an entity, so prepend custom collectors to override the defaults. Collectors implement `SelectiveEntitySync\Export\Collectors\EntityCollector`.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$collectors` | `EntityCollector[]` | Default: post, attachment and term collectors. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_collectors', function ( array $collectors ) {
+	array_unshift( $collectors, new My_Product_Collector() );
+	return $collectors;
+} );
+```
+
 ## Roadmap to launch
 
 What's left before the first public release. Items are ticked as they land on `main`.
 
 ### Export
 
-- [ ] REST endpoint listing selectable content (search, filter by post type and status)
-- [ ] Dependency resolution: parent posts, terms and their ancestors, featured images, media used in blocks and `[gallery]` shortcodes, ID-bearing post meta
-- [ ] Post, term and attachment collectors, with author info exported as login and email (mapped on import)
-- [ ] Default excluded meta keys (`_edit_lock`, `_edit_last`, `_wp_old_slug`, …), filterable
-- [ ] Export REST endpoint returning the package as a download
-- [ ] WP-CLI: `wp selective-entity-sync export`
+- [x] REST endpoint listing selectable content (search, filter by post type and status)
+- [x] Dependency resolution: parent posts, terms and their ancestors, featured images, media and synced patterns used in blocks, `wp-image-N` classes and `[gallery]` shortcodes, ID-bearing meta
+- [x] Post, term and attachment collectors, with author info exported as login and email (mapped on import)
+- [x] Default excluded meta keys (`_edit_lock`, `_edit_last`, `_wp_old_slug`, …), filterable
+- [x] Export REST endpoints: preview and package download
+- [x] WP-CLI: `wp selective-entity-sync export`
 
 ### Import
 
@@ -224,8 +430,10 @@ What's left before the first public release. Items are ticked as they land on `m
 
 ### Extensibility
 
-- [ ] Export and import lifecycle hooks (`before_export`, `after_export`, `before_import`, `after_import`, `entity_imported`, `import_failed`)
-- [ ] Filterable registries for collectors, import handlers and reference rewriters
+- [x] Export lifecycle hooks (`before_export`, `after_export`)
+- [ ] Import lifecycle hooks (`before_import`, `after_import`, `entity_imported`, `import_failed`)
+- [x] Filterable collector registry (export)
+- [ ] Filterable registries for import handlers and reference rewriters
 - [ ] Abilities API integration (WordPress 6.9+) for export, preview and import (optional)
 
 ### Quality and maintenance

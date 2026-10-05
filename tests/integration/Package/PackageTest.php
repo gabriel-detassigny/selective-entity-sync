@@ -299,9 +299,10 @@ class PackageTest extends WP_UnitTestCase {
 		);
 		$manifest->add_entity(
 			array(
-				'uuid' => self::POST_UUID,
-				'type' => 'post',
-				'data' => array( 'post_title' => 'Hello' ),
+				'uuid'      => self::POST_UUID,
+				'type'      => 'post',
+				'source_id' => 1,
+				'data'      => array( 'post_title' => 'Hello' ),
 			)
 		);
 

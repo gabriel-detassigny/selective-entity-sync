@@ -8,7 +8,23 @@
 namespace SelectiveEntitySync;
 
 use SelectiveEntitySync\Admin\AdminPage;
+use SelectiveEntitySync\Cli\CliCommands;
+use SelectiveEntitySync\Cli\Command;
+use SelectiveEntitySync\Content\BlockReferenceMap;
+use SelectiveEntitySync\Content\ContentReferenceFinder;
 use SelectiveEntitySync\Contracts\Hookable;
+use SelectiveEntitySync\Export\Collectors\AttachmentCollector;
+use SelectiveEntitySync\Export\Collectors\MetaCollector;
+use SelectiveEntitySync\Export\Collectors\PostCollector;
+use SelectiveEntitySync\Export\Collectors\TermCollector;
+use SelectiveEntitySync\Export\Exporter;
+use SelectiveEntitySync\Export\ExportSettings;
+use SelectiveEntitySync\Identity\EntityUuid;
+use SelectiveEntitySync\Manifest\ManifestCodec;
+use SelectiveEntitySync\Manifest\Schema;
+use SelectiveEntitySync\Package\PackageWriter;
+use SelectiveEntitySync\Rest\EntitiesController;
+use SelectiveEntitySync\Rest\ExportController;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
 use SelectiveEntitySync\Support\I18n;
@@ -94,11 +110,31 @@ class Plugin {
 	private function get_services(): array {
 		$capabilities = new Capabilities();
 		$i18n         = new I18n( $this->plugin_file );
+		$storage      = new TempStorage();
+		$settings     = new ExportSettings();
+		$uuids        = new EntityUuid();
+		$schema       = new Schema();
+		$meta         = new MetaCollector( $settings );
+		$exporter     = new Exporter(
+			$settings,
+			$uuids,
+			array(
+				new PostCollector( $settings, $meta, new ContentReferenceFinder( new BlockReferenceMap() ) ),
+				new AttachmentCollector( $meta ),
+				new TermCollector( $meta ),
+			),
+			new PackageWriter( new ManifestCodec( $schema ), $schema ),
+			$storage,
+			$this->version
+		);
 
 		return array(
 			$i18n,
 			new AdminPage( $this->plugin_file, $capabilities, $i18n ),
-			new TempStorage(),
+			$storage,
+			new EntitiesController( $capabilities, $settings, $uuids ),
+			new ExportController( $capabilities, $settings, $exporter, $storage ),
+			new CliCommands( new Command( $exporter, $storage ) ),
 		);
 	}
 }

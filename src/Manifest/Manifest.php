@@ -88,13 +88,17 @@ class Manifest {
 	/**
 	 * Adds an entity.
 	 *
-	 * @param array<string, mixed> $entity Entity with at least `uuid`, `type` and `data`.
+	 * @param array<string, mixed> $entity Entity with at least `uuid`, `type`, `source_id` and `data`.
 	 * @return void
 	 * @throws ManifestException When the entity is malformed or its UUID is already present.
 	 */
 	public function add_entity( array $entity ): void {
-		if ( ! isset( $entity['uuid'], $entity['type'], $entity['data'] ) || ! is_string( $entity['uuid'] ) || ! Uuid::is_valid( $entity['uuid'] ) || ! is_array( $entity['data'] ) ) {
-			throw new ManifestException( __( 'Cannot add an entity without a valid UUID, type and data.', 'selective-entity-sync' ) );
+		if (
+			! isset( $entity['uuid'], $entity['type'], $entity['source_id'], $entity['data'] )
+			|| ! is_string( $entity['uuid'] ) || ! Uuid::is_valid( $entity['uuid'] )
+			|| ! is_int( $entity['source_id'] ) || ! is_array( $entity['data'] )
+		) {
+			throw new ManifestException( __( 'Cannot add an entity without a valid UUID, type, source ID and data.', 'selective-entity-sync' ) );
 		}
 
 		$uuid = strtolower( $entity['uuid'] );

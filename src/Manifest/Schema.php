@@ -13,7 +13,10 @@ use SelectiveEntitySync\Identity\Uuid;
  * Validates the structure of a decoded manifest.
  *
  * Only the envelope is validated here: required keys, types, unique UUIDs and
- * safe file paths. The contents of each entity's `data` are validated later by
+ * safe file paths. `source_id` is the entity's ID on the source site; the
+ * importer uses it to remap IDs found in content (e.g. `wp-image-123`).
+ * Entities with `reference_only: true` are dependencies that were not bundled:
+ * they are matched on the target but never created. The contents of each entity's `data` are validated later by
  * the import handler responsible for that entity type.
  *
  * Manifest shape (schema version 1):
@@ -22,7 +25,7 @@ use SelectiveEntitySync\Identity\Uuid;
  *       "schema_version": 1,
  *       "generator": { "plugin": "selective-entity-sync", "version": "0.1.0" },
  *       "source": { "site_url": "https://staging.example.com", "wp_version": "6.9", "exported_at": "2026-10-05T12:00:00+00:00" },
- *       "entities": [ { "uuid": "…", "type": "post", "data": { … } } ],
+ *       "entities": [ { "uuid": "…", "type": "post", "source_id": 12, "data": { … } } ],
  *       "files": [ { "path": "media/…/photo.jpg", "sha256": "…", "size": 12345 } ]
  *     }
  */
@@ -118,8 +121,14 @@ class Schema {
 			if ( ! isset( $entity['type'] ) || ! is_string( $entity['type'] ) || 1 !== preg_match( '/^[a-z][a-z0-9_]{0,31}$/D', $entity['type'] ) ) {
 				throw $this->invalid_field( $field . '.type' );
 			}
+			if ( ! isset( $entity['source_id'] ) || ! is_int( $entity['source_id'] ) || $entity['source_id'] < 1 ) {
+				throw $this->invalid_field( $field . '.source_id' );
+			}
 			if ( ! isset( $entity['data'] ) || ! is_array( $entity['data'] ) ) {
 				throw $this->invalid_field( $field . '.data' );
+			}
+			if ( isset( $entity['reference_only'] ) && ! is_bool( $entity['reference_only'] ) ) {
+				throw $this->invalid_field( $field . '.reference_only' );
 			}
 
 			$uuid = strtolower( $entity['uuid'] );

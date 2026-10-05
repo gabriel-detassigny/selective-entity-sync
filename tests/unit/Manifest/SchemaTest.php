@@ -24,6 +24,15 @@ class SchemaTest extends TestCase {
 		$this->addToAssertionCount( 1 );
 	}
 
+	public function test_reference_only_entities_are_valid(): void {
+		$data                                  = $this->valid_manifest_data();
+		$data['entities'][0]['reference_only'] = true;
+
+		( new Schema() )->validate( $data );
+
+		$this->addToAssertionCount( 1 );
+	}
+
 	public function test_empty_entities_and_files_are_valid(): void {
 		( new Schema() )->validate(
 			$this->valid_manifest_data(
@@ -112,6 +121,27 @@ class SchemaTest extends TestCase {
 					return $d;
 				},
 				'"entities[0].type"',
+			),
+			'missing source id'       => array(
+				static function ( $d ) {
+					unset( $d['entities'][0]['source_id'] );
+					return $d;
+				},
+				'"entities[0].source_id"',
+			),
+			'zero source id'          => array(
+				static function ( $d ) {
+					$d['entities'][0]['source_id'] = 0;
+					return $d;
+				},
+				'"entities[0].source_id"',
+			),
+			'string reference_only'   => array(
+				static function ( $d ) {
+					$d['entities'][0]['reference_only'] = 'yes';
+					return $d;
+				},
+				'"entities[0].reference_only"',
 			),
 			'entity data not object'  => array(
 				static function ( $d ) {

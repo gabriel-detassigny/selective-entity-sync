@@ -28,9 +28,10 @@ class ManifestTest extends TestCase {
 		$manifest = $this->empty_manifest();
 		$manifest->add_entity(
 			array(
-				'uuid' => '3F2B8C1E-4A5D-4E6F-8A9B-0C1D2E3F4A5B',
-				'type' => 'post',
-				'data' => array(),
+				'uuid'      => '3F2B8C1E-4A5D-4E6F-8A9B-0C1D2E3F4A5B',
+				'type'      => 'post',
+				'source_id' => 1,
+				'data'      => array(),
 			)
 		);
 
@@ -45,9 +46,10 @@ class ManifestTest extends TestCase {
 	public function test_rejects_duplicate_entity(): void {
 		$manifest = $this->empty_manifest();
 		$entity   = array(
-			'uuid' => '3f2b8c1e-4a5d-4e6f-8a9b-0c1d2e3f4a5b',
-			'type' => 'post',
-			'data' => array(),
+			'uuid'      => '3f2b8c1e-4a5d-4e6f-8a9b-0c1d2e3f4a5b',
+			'type'      => 'post',
+			'source_id' => 1,
+			'data'      => array(),
 		);
 		$manifest->add_entity( $entity );
 
@@ -60,9 +62,10 @@ class ManifestTest extends TestCase {
 
 		$this->empty_manifest()->add_entity(
 			array(
-				'uuid' => '42',
-				'type' => 'post',
-				'data' => array(),
+				'uuid'      => '42',
+				'type'      => 'post',
+				'source_id' => 1,
+				'data'      => array(),
 			)
 		);
 	}

@@ -60,7 +60,11 @@ src/                        PHP, PSR-4 namespace SelectiveEntitySync\
   Manifest/                 Manifest model, schema validation, JSON codec, safe package paths.
   Package/                  Zip writer and reader (all untrusted-input checks live in PackageReader).
   Storage/                  Temporary working directories under get_temp_dir(), with daily cleanup.
-  Export/ Import/ Rest/ Cli/   Upcoming feature areas.
+  Content/                  Finds post IDs referenced by content (block attributes, wp-image-N, [gallery]).
+  Export/                   Exporter (dependency walk), ExportContext, ExportSettings (filters), Collectors/.
+  Rest/                     REST controllers under selective-entity-sync/v1.
+  Cli/                      `wp selective-entity-sync` command.
+  Import/                   Upcoming.
 src-js/                     React admin app (built by @wordpress/scripts to build/).
 tests/unit/                 PHPUnit + Brain Monkey. No WordPress loaded.
 tests/integration/          PHPUnit + WP test suite, runs inside wp-env.
