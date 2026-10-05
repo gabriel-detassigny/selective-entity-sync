@@ -157,6 +157,8 @@ class ExporterTest extends WP_UnitTestCase {
 		$this->assertSame( 'image/jpeg', $entity['data']['post_mime_type'] );
 		$this->assertSame( 'media/' . $entity['uuid'] . '/canola.jpg', $entity['file']['path'] );
 		$this->assertSame( 'canola.jpg', $entity['file']['original_name'] );
+		$this->assertSame( wp_get_attachment_url( $attachment ), $entity['file']['urls']['full'] );
+		$this->assertSame( wp_get_attachment_image_src( $attachment, 'thumbnail' )[0], $entity['file']['urls']['sizes']['thumbnail'] );
 		$this->assertSame( array( 'A canola field' ), $entity['meta']['_wp_attachment_image_alt'] );
 		$this->assertArrayNotHasKey( '_wp_attached_file', $entity['meta'] );
 		$this->assertArrayNotHasKey( '_wp_attachment_metadata', $entity['meta'] );

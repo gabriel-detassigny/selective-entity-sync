@@ -98,6 +98,7 @@ class AttachmentCollector implements EntityCollector {
 				'path'          => $package_path,
 				'original_name' => wp_basename( $source ),
 				'relative_path' => (string) get_post_meta( $post->ID, '_wp_attached_file', true ),
+				'urls'          => $this->get_urls( $post->ID ),
 			),
 			'relations' => array(
 				'author' => AuthorInfo::for_user( (int) $post->post_author ),
@@ -122,6 +123,38 @@ class AttachmentCollector implements EntityCollector {
 				'post_title'     => $post->post_title,
 				'post_mime_type' => $post->post_mime_type,
 			),
+			// URLs let the importer rewrite them in content when the media is matched on the target.
+			'file'           => array(
+				'urls' => $this->get_urls( $post->ID ),
+			),
+		);
+	}
+
+	/**
+	 * Returns the attachment's URLs on this site, so the importer can rewrite them in content.
+	 *
+	 * @param int $attachment_id Attachment ID.
+	 * @return array{full: string, original: string, sizes: array<string, string>}
+	 */
+	private function get_urls( int $attachment_id ): array {
+		$full     = (string) wp_get_attachment_url( $attachment_id );
+		$original = wp_attachment_is_image( $attachment_id ) ? wp_get_original_image_url( $attachment_id ) : false;
+		$sizes    = array();
+
+		$metadata = wp_get_attachment_metadata( $attachment_id );
+		if ( is_array( $metadata ) && ! empty( $metadata['sizes'] ) && is_array( $metadata['sizes'] ) ) {
+			foreach ( array_keys( $metadata['sizes'] ) as $size ) {
+				$image = wp_get_attachment_image_src( $attachment_id, (string) $size );
+				if ( is_array( $image ) && $image[0] !== $full ) {
+					$sizes[ (string) $size ] = $image[0];
+				}
+			}
+		}
+
+		return array(
+			'full'     => $full,
+			'original' => is_string( $original ) ? $original : $full,
+			'sizes'    => $sizes,
 		);
 	}
 

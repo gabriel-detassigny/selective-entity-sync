@@ -12,6 +12,7 @@ use SelectiveEntitySync\Cli\CliCommands;
 use SelectiveEntitySync\Cli\Command;
 use SelectiveEntitySync\Content\BlockReferenceMap;
 use SelectiveEntitySync\Content\ContentReferenceFinder;
+use SelectiveEntitySync\Content\ContentRewriter;
 use SelectiveEntitySync\Contracts\Hookable;
 use SelectiveEntitySync\Export\Collectors\AttachmentCollector;
 use SelectiveEntitySync\Export\Collectors\MetaCollector;
@@ -20,11 +21,22 @@ use SelectiveEntitySync\Export\Collectors\TermCollector;
 use SelectiveEntitySync\Export\Exporter;
 use SelectiveEntitySync\Export\ExportSettings;
 use SelectiveEntitySync\Identity\EntityUuid;
+use SelectiveEntitySync\Import\AuthorResolver;
+use SelectiveEntitySync\Import\Handlers\AttachmentHandler;
+use SelectiveEntitySync\Import\Handlers\PostHandler;
+use SelectiveEntitySync\Import\Handlers\TermHandler;
+use SelectiveEntitySync\Import\Importer;
+use SelectiveEntitySync\Import\ImportPlanner;
+use SelectiveEntitySync\Import\MetaImporter;
+use SelectiveEntitySync\Import\PackageStore;
 use SelectiveEntitySync\Manifest\ManifestCodec;
 use SelectiveEntitySync\Manifest\Schema;
+use SelectiveEntitySync\Package\PackageLimits;
+use SelectiveEntitySync\Package\PackageReader;
 use SelectiveEntitySync\Package\PackageWriter;
 use SelectiveEntitySync\Rest\EntitiesController;
 use SelectiveEntitySync\Rest\ExportController;
+use SelectiveEntitySync\Rest\ImportController;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
 use SelectiveEntitySync\Support\I18n;
@@ -114,27 +126,48 @@ class Plugin {
 		$settings     = new ExportSettings();
 		$uuids        = new EntityUuid();
 		$schema       = new Schema();
+		$codec        = new ManifestCodec( $schema );
+		$block_map    = new BlockReferenceMap();
+		$finder       = new ContentReferenceFinder( $block_map );
 		$meta         = new MetaCollector( $settings );
 		$exporter     = new Exporter(
 			$settings,
 			$uuids,
 			array(
-				new PostCollector( $settings, $meta, new ContentReferenceFinder( new BlockReferenceMap() ) ),
+				new PostCollector( $settings, $meta, $finder ),
 				new AttachmentCollector( $meta ),
 				new TermCollector( $meta ),
 			),
-			new PackageWriter( new ManifestCodec( $schema ), $schema ),
+			new PackageWriter( $codec, $schema ),
 			$storage,
 			$this->version
 		);
+
+		$meta_importer = new MetaImporter( $settings );
+		$authors       = new AuthorResolver();
+		$importer      = new Importer(
+			new ImportPlanner(
+				$uuids,
+				array(
+					new PostHandler( $settings, $meta_importer, $authors, $finder, new ContentRewriter( $block_map ) ),
+					new AttachmentHandler( $meta_importer, $authors ),
+					new TermHandler( $meta_importer ),
+				)
+			),
+			$uuids
+		);
+		$reader        = new PackageReader( $codec, new PackageLimits() );
+		$package_store = new PackageStore();
 
 		return array(
 			$i18n,
 			new AdminPage( $this->plugin_file, $capabilities, $i18n ),
 			$storage,
+			$package_store,
 			new EntitiesController( $capabilities, $settings, $uuids ),
 			new ExportController( $capabilities, $settings, $exporter, $storage ),
-			new CliCommands( new Command( $exporter, $storage ) ),
+			new ImportController( $capabilities, $package_store, $reader, $importer, $storage ),
+			new CliCommands( new Command( $exporter, $storage, $reader, $importer ) ),
 		);
 	}
 }

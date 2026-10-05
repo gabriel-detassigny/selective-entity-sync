@@ -9,6 +9,9 @@ namespace SelectiveEntitySync\Cli;
 
 use SelectiveEntitySync\Exception\SyncException;
 use SelectiveEntitySync\Export\Exporter;
+use SelectiveEntitySync\Import\Importer;
+use SelectiveEntitySync\Import\ImportPlan;
+use SelectiveEntitySync\Package\PackageReader;
 use SelectiveEntitySync\Storage\TempStorage;
 use WP_CLI;
 
@@ -32,14 +35,32 @@ class Command {
 	private $storage;
 
 	/**
+	 * Package reader.
+	 *
+	 * @var PackageReader
+	 */
+	private $reader;
+
+	/**
+	 * Importer.
+	 *
+	 * @var Importer
+	 */
+	private $importer;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param Exporter    $exporter Exporter.
-	 * @param TempStorage $storage  Temporary storage.
+	 * @param Exporter      $exporter Exporter.
+	 * @param TempStorage   $storage  Temporary storage.
+	 * @param PackageReader $reader   Package reader.
+	 * @param Importer      $importer Importer.
 	 */
-	public function __construct( Exporter $exporter, TempStorage $storage ) {
+	public function __construct( Exporter $exporter, TempStorage $storage, PackageReader $reader, Importer $importer ) {
 		$this->exporter = $exporter;
 		$this->storage  = $storage;
+		$this->reader   = $reader;
+		$this->importer = $importer;
 	}
 
 	/**
@@ -98,6 +119,126 @@ class Command {
 		}
 
 		WP_CLI::success( sprintf( 'Exported %d entities to %s.', count( $result->get_manifest()->get_entities() ), $destination ) );
+	}
+
+	/**
+	 * Imports a package.
+	 *
+	 * Existing content is matched by UUID (then by slug, or by file for media)
+	 * and updated; everything else is created. IDs and media URLs in content
+	 * are remapped to this site's.
+	 *
+	 * Run it as an administrator (`--user=<login>`): without a user, content is
+	 * filtered like it would be for an untrusted author (no scripts, iframes, …).
+	 *
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : Path of the package (.zip) to import.
+	 *
+	 * [--dry-run]
+	 * : Show what would be created, updated or skipped, without writing anything.
+	 *
+	 * [--skip=<uuids>]
+	 * : Comma-separated UUIDs of entities not to write.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     # Preview an import.
+	 *     $ wp selective-entity-sync import /tmp/sync.zip --dry-run
+	 *
+	 *     # Import as an administrator.
+	 *     $ wp selective-entity-sync import /tmp/sync.zip --user=admin
+	 *
+	 * @param string[]              $args       Positional arguments.
+	 * @param array<string, string> $assoc_args Associative arguments.
+	 * @return void
+	 */
+	public function import( array $args, array $assoc_args ): void {
+		$file = (string) ( $args[0] ?? '' );
+
+		if ( WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run', false ) ) {
+			try {
+				$plan = $this->importer->plan( $this->reader->read_manifest( $file ) );
+			} catch ( SyncException $e ) {
+				WP_CLI::error( $e->getMessage() );
+				return;
+			}
+
+			$this->print_plan( $plan );
+			return;
+		}
+
+		if ( ! current_user_can( 'unfiltered_html' ) ) {
+			WP_CLI::warning( 'No administrator is set: content will be filtered. Use --user=<login> to import content as-is.' );
+		}
+
+		$skip      = array_filter( array_map( 'trim', explode( ',', (string) ( $assoc_args['skip'] ?? '' ) ) ) );
+		$directory = null;
+
+		try {
+			$directory = $this->storage->create_directory();
+			$report    = $this->importer->import( $this->reader->read( $file, $directory ), $skip );
+		} catch ( SyncException $e ) {
+			WP_CLI::error( $e->getMessage() );
+			return;
+		} finally {
+			if ( null !== $directory ) {
+				$this->storage->delete( $directory );
+			}
+		}
+
+		$rows = array();
+		foreach ( $report->get_items() as $item ) {
+			$rows[] = array(
+				'result'   => $item['result'],
+				'type'     => $item['subtype_label'],
+				'title'    => $item['title'],
+				'local_id' => $item['local_id'],
+				'message'  => $item['message'],
+			);
+		}
+		WP_CLI\Utils\format_items( 'table', $rows, array( 'result', 'type', 'title', 'local_id', 'message' ) );
+
+		foreach ( $report->get_warnings() as $warning ) {
+			WP_CLI::warning( $warning );
+		}
+
+		$counts  = $report->get_counts();
+		$summary = sprintf( '%d created, %d updated, %d skipped, %d linked, %d missing, %d failed.', $counts['created'], $counts['updated'], $counts['skipped'], $counts['linked'], $counts['missing'], $counts['failed'] );
+
+		if ( $report->has_failures() ) {
+			WP_CLI::error( 'Import finished with errors: ' . $summary );
+			return;
+		}
+
+		WP_CLI::success( 'Imported: ' . $summary );
+	}
+
+	/**
+	 * Prints an import plan.
+	 *
+	 * @param ImportPlan $plan Plan.
+	 * @return void
+	 */
+	private function print_plan( ImportPlan $plan ): void {
+		$rows = array();
+		foreach ( $plan->get_items() as $item ) {
+			$rows[] = array(
+				'action'   => $item['action'],
+				'type'     => $item['subtype_label'],
+				'title'    => $item['title'],
+				'match'    => $item['match'],
+				'local_id' => $item['local_id'],
+				'uuid'     => $item['uuid'],
+				'reason'   => $item['reason'],
+			);
+		}
+
+		WP_CLI\Utils\format_items( 'table', $rows, array( 'action', 'type', 'title', 'match', 'local_id', 'uuid', 'reason' ) );
+
+		$counts = $plan->get_counts();
+		WP_CLI::log( sprintf( 'Dry run: %d to create, %d to update, %d to skip, %d to link, %d missing.', $counts['create'], $counts['update'], $counts['skip'], $counts['link'], $counts['missing'] ) );
 	}
 
 	/**
