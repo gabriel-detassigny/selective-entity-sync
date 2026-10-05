@@ -61,8 +61,12 @@ Content that isn't in the manifest is never touched.
 
 - **No ACF support** yet. ACF fields that store plain values are synced as post meta, but relational ACF fields (post object, relationship, image, gallery) aren't remapped.
 - **No direct site-to-site push.** Packages are transferred as files.
+- **File types must be allowed on the target.** Media whose type the target doesn't accept for uploads (e.g. SVG on a default install) is rejected.
+- **Content with the same slug is treated as the same item** when it has never been synced (see [`selective_entity_sync_match_existing_entity`](#selective_entity_sync_match_existing_entity) to disable this).
+- **Links to other pages** are rewritten from the source domain to the target domain, but not remapped to different slugs.
 - **Users, comments, orders and other non-content data are intentionally never synced.**
-- Very large packages may hit PHP upload or memory limits. Use WP-CLI for big imports.
+- Very large packages may hit PHP upload, memory or time limits: imports run in a single request. Use WP-CLI for big imports.
+- The Export table's selection applies to the current page of results (use up to 100 items per page).
 
 ## Requirements
 
@@ -83,7 +87,7 @@ Content that isn't in the manifest is never touched.
 **Tools → Selective Entity Sync** has two tabs:
 
 - **Export**: search and filter your content (by type and status), select entries, then use **Export** to review what will be included (selected items, dependencies added automatically, files and their size, warnings) and download the package.
-- **Import**: upload a package, review the preview, confirm the import, read the result report.
+- **Import**: upload a package and review the preview: each item is marked **Create** or **Update** (with how it was matched, e.g. "Previously synced" or "Same slug"), and you can untick anything you don't want to change. Then import and read the result report, with links to every imported item.
 
 By default only users with the `manage_options` capability can access the screen. See [`selective_entity_sync_capability`](#selective_entity_sync_capability).
 
@@ -97,7 +101,19 @@ wp selective-entity-sync export --post_ids=12,34 --dry-run
 wp selective-entity-sync export --post_ids=12,34 --file=/tmp/sync.zip
 ```
 
-Import commands (`wp selective-entity-sync import <file> [--dry-run]`) are coming soon.
+# Preview an import: what would be created, updated, skipped, linked or missing.
+wp selective-entity-sync import /tmp/sync.zip --dry-run
+
+# Import, as an administrator so content isn't filtered.
+wp selective-entity-sync import /tmp/sync.zip --user=admin
+
+# Leave some entities untouched.
+wp selective-entity-sync import /tmp/sync.zip --user=admin --skip=<uuid>,<uuid>
+```
+
+Run imports with `--user=<administrator>`. Without a user, WordPress filters imported content the way it does for untrusted authors (scripts, iframes and similar markup are removed).
+
+```bash
 
 ### REST API
 
@@ -109,6 +125,12 @@ All routes live under `/wp-json/selective-entity-sync/v1` and need the capabilit
 | `GET /export/options` | Exportable post types and statuses, with labels. |
 | `POST /export/preview` | `{ "post_ids": [12, 34] }`: what the export would contain (entities, files, warnings). |
 | `POST /export` | `{ "post_ids": [12, 34] }`: responds with the package zip file. |
+| `POST /import/packages` | Multipart upload (field `package`): stores the package and returns a `token` with the import plan. |
+| `GET /import/packages/{token}` | The import plan of an uploaded package. |
+| `POST /import/packages/{token}/import` | `{ "skip": ["<uuid>"] }`: runs the import and returns the report. The package is deleted afterwards. |
+| `DELETE /import/packages/{token}` | Discards an uploaded package. |
+
+Uploaded packages are only visible to the user who uploaded them and expire after a day (see [`selective_entity_sync_temp_file_lifetime`](#selective_entity_sync_temp_file_lifetime)).
 
 ## Hooks reference
 
@@ -161,6 +183,78 @@ Since `0.1.0`.
 ```php
 add_action( 'selective_entity_sync_after_export', function ( $result ) {
 	copy( $result->get_package_path(), WP_CONTENT_DIR . '/sync-archive/' . time() . '.zip' );
+} );
+```
+
+#### `selective_entity_sync_before_import`
+
+Fires before a package is imported.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$manifest` | `SelectiveEntitySync\Manifest\Manifest` | The manifest being imported. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_before_import', function ( $manifest ) {
+	error_log( 'Importing from ' . $manifest->get_source()['site_url'] );
+} );
+```
+
+#### `selective_entity_sync_entity_imported`
+
+Fires after an entity has been written.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$entity` | `array` | Manifest entity. |
+| `$local_id` | `int` | Local post or term ID. |
+| `$result` | `string` | `created` or `updated`. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_entity_imported', function ( array $entity, int $local_id, string $result ) {
+	if ( 'post' === $entity['type'] ) {
+		clean_post_cache( $local_id );
+	}
+}, 10, 3 );
+```
+
+#### `selective_entity_sync_import_failed`
+
+Fires when an entity fails to import. The import carries on with the other entities.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$entity` | `array` | Manifest entity. |
+| `$message` | `string` | Error message. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_import_failed', function ( array $entity, string $message ) {
+	error_log( "Import of {$entity['uuid']} failed: {$message}" );
+}, 10, 2 );
+```
+
+#### `selective_entity_sync_after_import`
+
+Fires after a package has been imported.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$report` | `SelectiveEntitySync\Import\ImportReport` | What happened to each entity (`get_items()`, `get_counts()`, `has_failures()`). |
+| `$manifest` | `SelectiveEntitySync\Manifest\Manifest` | The imported manifest. |
+
+Since `0.1.0`.
+
+```php
+add_action( 'selective_entity_sync_after_import', function ( $report ) {
+	if ( $report->has_failures() ) {
+		wp_mail( get_option( 'admin_email' ), 'Content sync finished with errors', print_r( $report->get_counts(), true ) );
+	}
 } );
 ```
 
@@ -397,6 +491,115 @@ add_filter( 'selective_entity_sync_collectors', function ( array $collectors ) {
 } );
 ```
 
+#### `selective_entity_sync_import_handlers`
+
+Filters the handlers used to import entities. The first handler whose `supports()` returns true imports an entity, so prepend custom handlers to override the defaults. Handlers implement `SelectiveEntitySync\Import\Handlers\ImportHandler`.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$handlers` | `ImportHandler[]` | Default: post, attachment and term handlers. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_import_handlers', function ( array $handlers ) {
+	array_unshift( $handlers, new My_Product_Import_Handler() );
+	return $handlers;
+} );
+```
+
+#### `selective_entity_sync_match_existing_entity`
+
+Filters the local object an imported entity is matched to. Matching tries the UUID first, then the slug (or the file checksum for media), but only accepts a slug match when the local object has no UUID or the same one.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$local_id` | `int\|null` | Matched local ID, or `null`. Return a local ID to force a match, or `null` to import the entity as new. |
+| `$entity` | `array` | Manifest entity. |
+| `$method` | `string\|null` | How it was matched: `uuid`, `slug`, `file`, or `null`. |
+
+Since `0.1.0`.
+
+```php
+// Never link by slug: only UUID matches count.
+add_filter( 'selective_entity_sync_match_existing_entity', function ( $local_id, array $entity, $method ) {
+	return 'slug' === $method ? null : $local_id;
+}, 10, 3 );
+```
+
+#### `selective_entity_sync_import_action`
+
+Filters what happens to an entity on import. The admin screen also lets users untick items.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$action` | `string` | `create`, `update` or `skip`. Default: `update` when a local match exists, `create` otherwise. |
+| `$entity` | `array` | Manifest entity. |
+| `$local_id` | `int\|null` | ID of the matched local object, if any. |
+
+Since `0.1.0`.
+
+```php
+// Never overwrite pages that already exist on this site.
+add_filter( 'selective_entity_sync_import_action', function ( string $action, array $entity ) {
+	return 'update' === $action && 'page' === ( $entity['data']['post_type'] ?? '' ) ? 'skip' : $action;
+}, 10, 2 );
+```
+
+#### `selective_entity_sync_import_entity_data`
+
+Filters an entity just before it's written to this site.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$entity` | `array` | Manifest entity. |
+| `$local_id` | `int\|null` | Local ID being updated, or `null` when creating. |
+
+Since `0.1.0`.
+
+```php
+// Import everything as a draft for review.
+add_filter( 'selective_entity_sync_import_entity_data', function ( array $entity ) {
+	if ( 'post' === $entity['type'] ) {
+		$entity['data']['post_status'] = 'draft';
+	}
+	return $entity;
+} );
+```
+
+#### `selective_entity_sync_import_author`
+
+Filters the local user an imported post or media item is attributed to. By default authors are matched by login, then email. Without a match, existing content keeps its author and new content is attributed to the importing user.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$user_id` | `int` | Resolved local user ID (0 for none). |
+| `$author` | `array\|null` | Exported author info: `login`, `email`, `display_name`. |
+| `$current_id` | `int` | Current author of the local post (0 for new content). |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_import_author', function ( int $user_id ) {
+	return $user_id ?: (int) get_user_by( 'login', 'editorial' )->ID;
+} );
+```
+
+#### `selective_entity_sync_replace_site_url`
+
+Filters whether the source site's URL is replaced with this site's URL in imported content (post content and excerpts). Media file URLs are always remapped.
+
+| Parameter | Type | Description |
+|---|---|---|
+| `$replace` | `bool` | Default `true`. |
+| `$source_url` | `string` | The source site URL from the package. |
+
+Since `0.1.0`.
+
+```php
+add_filter( 'selective_entity_sync_replace_site_url', '__return_false' );
+```
+
 ## Roadmap to launch
 
 What's left before the first public release. Items are ticked as they land on `main`.
@@ -412,33 +615,33 @@ What's left before the first public release. Items are ticked as they land on `m
 
 ### Import
 
-- [ ] Package upload, validation and storage between requests
-- [ ] Preview (dry run): what will be created, updated or skipped, and why
-- [ ] Matching existing content by UUID, falling back to natural keys (post type + slug, taxonomy + slug, file hash)
-- [ ] Ordered import (terms → media → posts) building a UUID → local ID map
-- [ ] Reference rewriting: block attributes (`id`, `ids`, `mediaId`, …), `wp-image-N` classes, `[gallery ids]`, `_thumbnail_id`, post and term parents, ID-bearing meta
-- [ ] Media import: file sideloading, regenerated image sizes, deduplication
-- [ ] Conflict strategies (update / skip / duplicate), filterable per entity
+- [x] Package upload, validation and storage between requests
+- [x] Preview (dry run): what will be created, updated or skipped, and why
+- [x] Matching existing content by UUID, falling back to natural keys (post type + slug, taxonomy + slug, file hash)
+- [x] Ordered import (dependencies first) building a UUID → local ID map
+- [x] Reference rewriting: block attributes (`id`, `ids`, `mediaId`, …), `wp-image-N` classes, `[gallery ids]`, `_thumbnail_id`, post and term parents, ID-bearing meta, media URLs, site URL
+- [x] Media import: file sideloading, regenerated image sizes, deduplication
+- [x] Conflict handling: update by default, skip per item (UI) or by filter
 - [ ] Batched processing for large packages
-- [ ] Import REST endpoints (preview, run)
-- [ ] WP-CLI: `wp selective-entity-sync import <file> [--dry-run]`
+- [x] Import REST endpoints (upload, preview, run, discard)
+- [x] WP-CLI: `wp selective-entity-sync import <file> [--dry-run]`
 
 ### Admin UI
 
 - [x] Export tab: DataViews table with search, filters and multi-select, dependency summary, download
-- [ ] Import tab: upload, preview table, confirmation, progress, result report
+- [x] Import tab: upload, preview table, confirmation, progress, result report
 
 ### Extensibility
 
 - [x] Export lifecycle hooks (`before_export`, `after_export`)
-- [ ] Import lifecycle hooks (`before_import`, `after_import`, `entity_imported`, `import_failed`)
+- [x] Import lifecycle hooks (`before_import`, `after_import`, `entity_imported`, `import_failed`)
 - [x] Filterable collector registry (export)
-- [ ] Filterable registries for import handlers and reference rewriters
+- [x] Filterable import handler registry; block reference map shared by export and import
 - [ ] Abilities API integration (WordPress 6.9+) for export, preview and import (optional)
 
 ### Quality and maintenance
 
-- [ ] End-to-end round-trip test: export, alter the target, import, assert every reference is remapped and unrelated content is untouched
+- [x] Round-trip tests: export, alter the target, import, assert every reference is remapped and unrelated content is untouched (integration test for all reference types, Playwright for the UI flow)
 - [x] Automated dependency updates and vulnerability alerts (Dependabot for Composer, npm and GitHub Actions; `composer audit` and `npm audit` in CI)
 - [ ] Security review of all entry points (REST, uploads, WP-CLI)
 - [ ] Translation files: generate the `.pot` and the JS translation JSON, and check with a non-English locale

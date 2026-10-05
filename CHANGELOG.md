@@ -20,4 +20,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - WP-CLI: `wp selective-entity-sync export --post_ids=… [--file=…] [--dry-run]`.
 - Export hooks: `before_export`/`after_export` actions, and filters for exportable post types, statuses and taxonomies, excluded and ID-bearing meta keys, block reference attributes, dependency inclusion, entity data and collectors.
 - Admin: Export tab (Tools → Selective Entity Sync) with a searchable, filterable content table (DataViews), bulk selection, an export preview listing dependencies, files and warnings, and package download.
+- Import: preview what will be created, updated, skipped, linked or missing; match existing content by UUID, then slug (or file checksum for media); write in dependency order; remap parents, terms, featured images, ID-bearing meta, block attributes, `wp-image-N`, `[gallery ids]`, media URLs and the site URL; replace media files only when their checksum changed; merge meta.
+- Admin: Import tab with package upload, a preview where items can be deselected, and a result report with edit links.
+- REST: `POST /import/packages`, `GET|DELETE /import/packages/{token}`, `POST /import/packages/{token}/import`. WP-CLI: `wp selective-entity-sync import <file> [--dry-run] [--skip=…]`.
+- Import hooks: `before_import`, `entity_imported`, `import_failed`, `after_import` actions; `import_handlers`, `match_existing_entity`, `import_action`, `import_entity_data`, `import_author`, `replace_site_url` filters.
 - Tooling: wp-env, PHPCS (WordPress VIP), PHPStan, PHPUnit (unit + integration), Playwright e2e, GitHub Actions CI.

@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ExportTab from './export/ExportTab';
+import ImportTab from './import/ImportTab';
 
 const TABS = [
 	{
@@ -29,12 +30,7 @@ export default function App() {
 						{ 'export' === tab.name ? (
 							<ExportTab />
 						) : (
-							<p>
-								{ __(
-									'Upload a manifest exported from another site.',
-									'selective-entity-sync'
-								) }
-							</p>
+							<ImportTab />
 						) }
 					</div>
 				) }

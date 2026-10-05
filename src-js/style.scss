@@ -46,3 +46,62 @@
 		overflow-y: auto;
 	}
 }
+
+.selective-entity-sync-import {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+
+	&__upload p,
+	&__plan > p {
+		margin-top: 0;
+		color: #50575e;
+	}
+
+	&__table {
+		margin-top: 8px;
+
+		.check-column {
+			width: 2.2em;
+			padding: 8px 0 0 10px;
+			vertical-align: top;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 8px;
+		align-items: center;
+		justify-content: flex-end;
+		margin-top: 16px;
+	}
+
+	&__action {
+		display: inline-block;
+		padding: 0 8px;
+		border-radius: 2px;
+		background: #f0f0f1;
+		font-size: 12px;
+		line-height: 20px;
+
+		&.is-create,
+		&.is-created {
+			background: #edfaef;
+			color: #00650f;
+		}
+
+		&.is-update,
+		&.is-updated,
+		&.is-link,
+		&.is-linked {
+			background: #f0f6fc;
+			color: #0a4b78;
+		}
+
+		&.is-missing,
+		&.is-failed {
+			background: #fcf0f1;
+			color: #8a2424;
+		}
+	}
+}

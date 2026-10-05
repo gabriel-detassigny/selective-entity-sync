@@ -89,6 +89,51 @@ export async function downloadExport( postIds ) {
 }
 
 /**
+ * Uploads a package and returns its import plan.
+ *
+ * @param {File} file Package file (.zip).
+ * @return {Promise<Object>} Plan: token, filename, source, items, counts.
+ */
+export function uploadPackage( file ) {
+	const body = new window.FormData();
+	body.append( 'package', file );
+
+	return apiFetch( {
+		path: `${ NAMESPACE }/import/packages`,
+		method: 'POST',
+		body,
+	} );
+}
+
+/**
+ * Imports an uploaded package.
+ *
+ * @param {string}   token Package token.
+ * @param {string[]} skip  UUIDs not to write.
+ * @return {Promise<Object>} Report: items, counts, warnings.
+ */
+export function importPackage( token, skip ) {
+	return apiFetch( {
+		path: `${ NAMESPACE }/import/packages/${ token }/import`,
+		method: 'POST',
+		data: { skip },
+	} );
+}
+
+/**
+ * Discards an uploaded package.
+ *
+ * @param {string} token Package token.
+ * @return {Promise<Object>} Response.
+ */
+export function discardPackage( token ) {
+	return apiFetch( {
+		path: `${ NAMESPACE }/import/packages/${ token }`,
+		method: 'DELETE',
+	} );
+}
+
+/**
  * Normalises errors thrown by apiFetch (with `parse: false`, a raw Response).
  *
  * @param {Response|Error|Object} error Thrown value.

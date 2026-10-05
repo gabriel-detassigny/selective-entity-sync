@@ -64,7 +64,8 @@ src/                        PHP, PSR-4 namespace SelectiveEntitySync\
   Export/                   Exporter (dependency walk), ExportContext, ExportSettings (filters), Collectors/.
   Rest/                     REST controllers under selective-entity-sync/v1.
   Cli/                      `wp selective-entity-sync` command.
-  Import/                   Upcoming.
+  Import/                   ImportPlanner (matching), Importer (ordering, writes), Handlers/, MetaImporter,
+                            AuthorResolver, PackageStore (uploads kept between requests).
 src-js/                     React admin app (built by @wordpress/scripts to build/).
 tests/unit/                 PHPUnit + Brain Monkey. No WordPress loaded.
 tests/integration/          PHPUnit + WP test suite, runs inside wp-env.

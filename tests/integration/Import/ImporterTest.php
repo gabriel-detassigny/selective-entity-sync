@@ -141,10 +141,15 @@ class ImporterTest extends WP_UnitTestCase {
 		}
 		wp_delete_term( $child_cat, 'category' );
 		wp_delete_term( $parent_cat, 'category' );
-		self::factory()->post->create_many( 3 );
+		$unrelated = self::factory()->post->create_many( 3, array( 'post_title' => 'Live content' ) );
 		self::factory()->category->create_many( 2 );
 
 		$report = $this->build_importer()->import( $this->read_package( $zip ) );
+
+		foreach ( $unrelated as $unrelated_id ) {
+			$this->assertSame( 'Live content', get_post( $unrelated_id )->post_title, 'Unrelated content is untouched.' );
+			$this->assertNull( $this->uuids->find( 'post', $unrelated_id ) );
+		}
 
 		$this->assertFalse( $report->has_failures(), (string) wp_json_encode( $report->to_array() ) );
 		$this->assertSame( 7, $report->get_counts()[ ImportReport::CREATED ] );
