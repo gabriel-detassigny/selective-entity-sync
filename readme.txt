@@ -1,5 +1,5 @@
 === Selective Entity Sync ===
-Contributors: gabrieldetassigny
+Contributors: gdetassigny
 Tags: staging, deployment, sync, migration, content
 Requires at least: 6.9
 Tested up to: 7.1
