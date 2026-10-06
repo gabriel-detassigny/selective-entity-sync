@@ -2,6 +2,7 @@
 
 # Excluded from `git archive` / Composer dist installs.
 /.github            export-ignore
+/.wordpress-org     export-ignore
 /tests              export-ignore
 /src-js             export-ignore
 /.distignore        export-ignore

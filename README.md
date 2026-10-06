@@ -4,7 +4,7 @@
 
 Selective Entity Sync is a WordPress plugin for moving content changes safely between two WordPress sites, such as staging → production, production → staging, or between two live sites. It doesn't migrate the whole database, or whole tables, which would wipe out the orders, user accounts and form entries created on the target site since your last sync. Instead it exports the exact **entities** you pick (posts, pages, custom post types, terms, media) into a portable manifest, and imports them on the target site, **remapping every database ID** along the way.
 
-> **Status:** early development (`0.1.0-dev`). Not ready for production use yet.
+> **Status:** first release (0.1.0) in preparation. Try it on a staging copy before relying on it in production.
 
 ---
 
@@ -13,6 +13,7 @@ Selective Entity Sync is a WordPress plugin for moving content changes safely be
 - [Why](#why)
 - [How it works](#how-it-works)
 - [What gets synced](#what-gets-synced)
+- [Screenshots](#screenshots)
 - [Limitations](#limitations)
 - [Security](#security)
 - [Requirements](#requirements)
@@ -58,6 +59,15 @@ Content that isn't in the manifest is never touched.
 | Media attachments | The file itself, title/caption/alt text, attachment meta. Image sizes are regenerated on the target |
 | Authors | Mapped to an existing user by login/email (users are never created). Falls back to the importing user |
 
+## Screenshots
+
+| | |
+|---|---|
+| ![Selecting content to export](.wordpress-org/screenshot-1.png) | ![Export preview with dependencies](.wordpress-org/screenshot-2.png) |
+| **Export:** search, filter and select content. | **Export preview:** dependencies are added automatically. |
+| ![Import preview](.wordpress-org/screenshot-3.png) | ![Import report](.wordpress-org/screenshot-4.png) |
+| **Import preview:** untick anything you want to keep unchanged. | **Import report:** links to every imported item. |
+
 ## Limitations
 
 - **No ACF support** yet. ACF fields that store plain values are synced as post meta, but relational ACF fields (post object, relationship, image, gallery) aren't remapped.
@@ -65,7 +75,8 @@ Content that isn't in the manifest is never touched.
 - **File types must be allowed on the target.** Media whose type the target doesn't accept for uploads (e.g. SVG on a default install) is rejected.
 - **Content with the same slug is treated as the same item** when it has never been synced (see [`selective_entity_sync_match_existing_entity`](#selective_entity_sync_match_existing_entity) to disable this).
 - **Links to other pages** are rewritten from the source domain to the target domain, but not remapped to different slugs.
-- **Users, comments, orders and other non-content data are intentionally never synced.**
+- **Users, comments, orders and other non-content data are intentionally never synced**, and neither are site settings, menus, templates or global styles.
+- **Multisite hasn't been tested yet.** Each site can export and import packages, but syncing directly between sites of the same network isn't supported.
 - Imports from the admin run in batches (see [`selective_entity_sync_import_batch_limits`](#selective_entity_sync_import_batch_limits)), but the package must still fit PHP's upload limit (`upload_max_filesize`, `post_max_size`). For very large packages, use WP-CLI.
 - The Export table's selection applies to the current page of results (use up to 100 items per page).
 
@@ -689,7 +700,7 @@ What's left before the first public release. Items are ticked as they land on `m
 
 ### Release
 
-- [ ] Finalise docs: `readme.txt` (FAQ, limitations such as ACF and SVG), `CONTRIBUTING.md`, screenshots
+- [x] Finalise docs: `readme.txt` (FAQ, limitations such as ACF and SVG), `CONTRIBUTING.md`, screenshots
 - [ ] Tag `v0.1.0` and publish the zip to GitHub Releases
 - [ ] Make the GitHub repository public
 - [ ] Submit to the WordPress.org plugin directory (Plugin Check, review, SVN deployment workflow)
@@ -729,7 +740,7 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 
 On the machine running the browser, map the hostname to the VM's IP in `/etc/hosts` (e.g. `192.168.1.50 mysite.wpenv.net`). `*.wpenv.net` resolves to `127.0.0.1` everywhere else, so WordPress's requests to itself (WP-Cron, REST API) keep working inside the container. Keep the test site on `localhost`, because Playwright runs on the same machine as wp-env. SSH port forwarding (`ssh -L 8898:localhost:8898 <vm>`) is an alternative that needs no config change.
 
-Contributor and agent guidelines live in [`AGENTS.md`](AGENTS.md).
+See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to contribute; detailed rules for contributors and AI agents live in [`AGENTS.md`](AGENTS.md).
 
 ## License
 
