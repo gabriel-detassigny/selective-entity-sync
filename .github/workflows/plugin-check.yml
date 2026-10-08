@@ -1,0 +1,48 @@
+name: Plugin Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  plugin-check:
+    name: WordPress.org Plugin Check (release zip)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '7.4'
+          coverage: none
+
+      - name: Install production PHP dependencies
+        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - run: npm run build
+
+      # Check exactly what ships, not the repository (tests, node_modules and dev tooling would add noise).
+      - name: Build and unpack the release zip
+        run: |
+          npm run plugin-zip
+          unzip -q selective-entity-sync.zip -d dist
+
+      - uses: WordPress/plugin-check-action@v1
+        with:
+          build-dir: dist/selective-entity-sync
+          include-experimental: true
