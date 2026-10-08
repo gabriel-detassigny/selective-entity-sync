@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+	<title>Selective Entity Sync</title>
+	<rect width="256" height="256" fill="#3858e9"/>
+	<g>
+		<g fill="none" stroke="#fff" stroke-width="10" stroke-linejoin="round">
+			<!-- Source site -->
+			<rect x="22" y="98" width="94" height="118" rx="12"/>
+			<line x1="22" y1="124" x2="116" y2="124"/>
+			<!-- Target site -->
+			<rect x="140" y="98" width="94" height="118" rx="12"/>
+			<line x1="140" y1="124" x2="234" y2="124"/>
+		</g>
+		<g fill="#fff" opacity=".5">
+			<!-- Source content -->
+			<rect x="38" y="140" width="62" height="14" rx="7"/>
+			<rect x="38" y="188" width="42" height="14" rx="7"/>
+			<!-- Target content: its own, left untouched -->
+			<rect x="156" y="140" width="40" height="14" rx="7"/>
+			<rect x="156" y="188" width="56" height="14" rx="7"/>
+		</g>
+		<!-- The selected item, on both sites -->
+		<g fill="#f0b849">
+			<rect x="38" y="164" width="62" height="14" rx="7"/>
+			<rect x="156" y="164" width="62" height="14" rx="7"/>
+		</g>
+		<!-- Sync arrow -->
+		<path d="M69 84 C69 30 187 30 187 70" fill="none" stroke="#fff" stroke-width="12" stroke-linecap="round"/>
+		<path d="M169 66 L205 66 L187 92 Z" fill="#fff" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>
+	</g>
+</svg>

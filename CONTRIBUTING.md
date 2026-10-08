@@ -48,6 +48,10 @@ Also:
 - **Changelog:** user-facing changes get a line in `CHANGELOG.md` under "Unreleased".
 - **Commits** follow [Conventional Commits](https://www.conventionalcommits.org/) (`feat:`, `fix:`, `docs:`, `test:`, `chore:`, `refactor:`, `ci:`).
 
+## WordPress.org listing art
+
+The banner, icon and screenshots for the WordPress.org plugin page live in `.wordpress-org/` and are never part of the plugin zip. The icon's source is `.wordpress-org/icon.svg` and the banner's is `dev/wordpress-org/banner.svg`. After editing either, run `node dev/wordpress-org/export-assets.mjs` to regenerate the PNGs.
+
 ## Compatibility
 
 The plugin supports **PHP 7.4+** and **WordPress 6.9+**. PHPCompatibility and PHPStan (run against WordPress 6.9) catch most mistakes, but please avoid PHP 8-only syntax and WordPress functions newer than 6.9 without a fallback.
