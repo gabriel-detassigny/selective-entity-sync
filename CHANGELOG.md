@@ -6,6 +6,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-10-08
+
+### Fixed
+
+- Error messages are now escaped when they are created, as WordPress.org requires, and turned back into plain text for the admin screen, the import report, WP-CLI output and the `selective_entity_sync_import_failed` hook, so quotes and ampersands still display normally.
+
+### Changed
+
+- The plugin zip now includes `composer.json`, alongside the bundled `vendor/` autoloader.
+
 ## [0.1.0] - 2026-10-08
 
 First release.
@@ -26,5 +36,6 @@ First release.
 - **Translations**: translation template and a complete French translation.
 - Requires WordPress 6.9+ and PHP 7.4+.
 
-[Unreleased]: https://github.com/gabriel-detassigny/selective-entity-sync/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/gabriel-detassigny/selective-entity-sync/compare/v0.1.1...HEAD
+[0.1.1]: https://github.com/gabriel-detassigny/selective-entity-sync/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/gabriel-detassigny/selective-entity-sync/releases/tag/v0.1.0

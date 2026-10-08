@@ -4,7 +4,7 @@ Tags: staging, deployment, sync, migration, content
 Requires at least: 6.9
 Tested up to: 7.1
 Requires PHP: 7.4
-Stable tag: 0.1.0
+Stable tag: 0.1.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -109,10 +109,17 @@ Multisite networks haven't been tested yet. Syncing directly between sites of th
 
 == Changelog ==
 
+= 0.1.1 =
+* Fixed: error messages are now escaped for safe display everywhere, and still read normally in the admin screen, the import report and WP-CLI.
+* The plugin package now includes composer.json.
+
 = 0.1.0 =
 * Initial release: export, import with preview and batching, ID and URL remapping, WP-CLI commands, REST API, French translation.
 
 == Upgrade Notice ==
+
+= 0.1.1 =
+Maintenance release: safer error messages and packaging fixes.
 
 = 0.1.0 =
 Initial release.
