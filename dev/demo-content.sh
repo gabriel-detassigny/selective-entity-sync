@@ -36,8 +36,13 @@ SPRING=$(wp post create --post_status=publish --post_title="Introducing our spri
 	--post_content="<!-- wp:image {\"id\":$I2} --><figure class=\"wp-block-image\"><img src=\"$I2_URL\" class=\"wp-image-$I2\"/></figure><!-- /wp:image --><!-- wp:block {\"ref\":$PATTERN} /-->" --porcelain)
 wp post meta set "$SPRING" _thumbnail_id "$I2" > /dev/null
 
+# A gallery as the block editor saves it: one image block per picture.
+gallery_image() {
+	echo "<!-- wp:image {\"id\":$1,\"linkDestination\":\"none\"} --><figure class=\"wp-block-image\"><img src=\"$(wp post get "$1" --field=guid)\" alt=\"\" class=\"wp-image-$1\"/></figure><!-- /wp:image -->"
+}
+GALLERY="<!-- wp:gallery {\"linkTo\":\"none\"} --><figure class=\"wp-block-gallery has-nested-images columns-default is-cropped\">$(gallery_image "$I1")$(gallery_image "$I3")</figure><!-- /wp:gallery -->"
 wp post create --post_status=publish --post_title="Behind the scenes at the studio" --post_category="$C1" \
-	--post_content="<!-- wp:gallery {\"ids\":[$I1,$I3]} --><figure class=\"wp-block-gallery\"></figure><!-- /wp:gallery -->" --porcelain > /dev/null
+	--post_content="$GALLERY" --porcelain > /dev/null
 NEXT_MONTH=$(wp eval 'echo gmdate( "Y-m-d 09:00:00", strtotime( "+1 month" ) );')
 wp post create --post_status=future --post_date="$NEXT_MONTH" \
 	--post_title="Autumn sale preview" --porcelain > /dev/null
