@@ -152,6 +152,7 @@ languages/                  .pot / translations.
 
 - Use Conventional Commits (`feat:`, `fix:`, `docs:`, `test:`, `chore:`, `refactor:`, `ci:`).
 - Update `CHANGELOG.md` (Unreleased section) for user-facing changes.
+- `readme.txt` is the WordPress.org plugin page and can be published between releases (see "Releasing" in `CONTRIBUTING.md`). Don't describe unreleased features there; put them in `CHANGELOG.md` and update `readme.txt` in the release commit.
 - Keep `README.md` accurate: features, limitations, usage and the hooks reference.
 - **Never commit AI tool files or folders** (`.claude/`, `.cursor/`, etc. are gitignored). `AGENTS.md` and `CLAUDE.md` are the only exceptions.
 - `.internal/` is private planning material: never commit it or quote it in public files.

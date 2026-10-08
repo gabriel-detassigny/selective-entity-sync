@@ -702,8 +702,11 @@ What's left before the first public release. Items are ticked as they land on `m
 
 - [x] Finalise docs: `readme.txt` (FAQ, limitations such as ACF and SVG), `CONTRIBUTING.md`, screenshots
 - [x] Tag `v0.1.0` and publish the zip to GitHub Releases
-- [ ] Make the GitHub repository public
-- [ ] Submit to the WordPress.org plugin directory (Plugin Check, review, SVN deployment workflow)
+- [x] Make the GitHub repository public
+- [x] Pass Plugin Check (0.1.1) and run it in CI; banner and icon for the plugin page
+- [x] Submit to the WordPress.org plugin directory
+- [x] Workflow that deploys tagged releases to WordPress.org's SVN repository
+- [ ] WordPress.org review approved, first release published there
 
 ## Development
 

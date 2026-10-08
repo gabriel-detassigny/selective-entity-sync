@@ -52,6 +52,18 @@ Also:
 
 The banner, icon and screenshots for the WordPress.org plugin page live in `.wordpress-org/` and are never part of the plugin zip. The icon's source is `.wordpress-org/icon.svg` and the banner's is `dev/wordpress-org/banner.svg`. After editing either, run `node dev/wordpress-org/export-assets.mjs` to regenerate the PNGs.
 
+## Releasing (maintainers)
+
+1. Update the version in `selective-entity-sync.php` (header and `SELECTIVE_ENTITY_SYNC_VERSION`), `package.json` and `package-lock.json`, and `Stable tag` in `readme.txt`. Move the "Unreleased" notes in `CHANGELOG.md` under the new version and add a short entry to the changelog in `readme.txt`. Run `npm run makepot`.
+2. Commit as `chore(release): x.y.z`, push, and wait for CI to pass.
+3. Tag `vx.y.z` and push the tag. The release workflow builds the zip, publishes it as a GitHub release and deploys the same files to WordPress.org's SVN repository, with the banner, icon and screenshots from `.wordpress-org/`.
+
+The deploy step is its own workflow, "WordPress.org deploy". Run it from the Actions tab with a tag (for example `v0.1.1`) to deploy a release that already exists on GitHub.
+
+To change only `readme.txt` or the listing art between releases, run the "WordPress.org readme & assets" workflow from the Actions tab. It copies `readme.txt` to the current stable version on WordPress.org, so `readme.txt` on `main` must not describe unreleased features at that point.
+
+The WordPress.org workflows run only when the repository variable `WPORG_DEPLOY` is `true`. They use the `SVN_USERNAME` and `SVN_PASSWORD` secrets of the `wordpress-org` environment (the password is the SVN password from your WordPress.org profile, not your account password).
+
 ## Compatibility
 
 The plugin supports **PHP 7.4+** and **WordPress 6.9+**. PHPCompatibility and PHPStan (run against WordPress 6.9) catch most mistakes, but please avoid PHP 8-only syntax and WordPress functions newer than 6.9 without a fallback.

@@ -1,0 +1,52 @@
+name: WordPress.org deploy
+
+# Deploys a GitHub release to WordPress.org's SVN repository: the files of its zip, plus the banner, icon and
+# screenshots from .wordpress-org/ at that tag. The release workflow calls it for every new tag; run it by hand
+# to deploy an existing release (for example the first one after the plugin is approved).
+on:
+  workflow_call:
+    inputs:
+      tag:
+        type: string
+        required: true
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to deploy, e.g. v0.1.1
+        type: string
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy ${{ inputs.tag }} to WordPress.org
+    # Off until the plugin is approved: set the repository variable WPORG_DEPLOY to "true" to enable it.
+    if: vars.WPORG_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    environment: wordpress-org
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag }}
+
+      - name: Download and unpack the release zip
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ inputs.tag }}
+        run: |
+          gh release download "$TAG" --pattern selective-entity-sync.zip --dir "$RUNNER_TEMP"
+          unzip -q "$RUNNER_TEMP/selective-entity-sync.zip" -d "$RUNNER_TEMP/dist"
+          echo "VERSION=${TAG#v}" >> "$GITHUB_ENV"
+
+      - name: Check the version matches the plugin
+        run: |
+          grep -q "Version:           ${VERSION}$" "$RUNNER_TEMP/dist/selective-entity-sync/selective-entity-sync.php" || { echo "The zip is not version ${VERSION}"; exit 1; }
+
+      - uses: 10up/action-wordpress-plugin-deploy@54bd289b8525fd23a5c365ec369185f2966529c2 # 2.3.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: selective-entity-sync
+          BUILD_DIR: ${{ runner.temp }}/dist/selective-entity-sync

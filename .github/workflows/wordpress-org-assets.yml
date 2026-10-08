@@ -1,0 +1,26 @@
+name: WordPress.org readme & assets
+
+# Publishes readme.txt and .wordpress-org/ (banner, icon, screenshots) to WordPress.org without a release.
+# Run it by hand from the Actions tab once the changes on main are ready to show on the plugin page:
+# readme.txt is copied to trunk and to the stable tag, so it must not describe unreleased features.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  assets:
+    name: Update readme & assets on WordPress.org
+    if: vars.WPORG_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    environment: wordpress-org
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: 10up/action-wordpress-plugin-asset-update@2480306f6f693672726d08b5917ea114cb2825f7 # 2.2.0
+        env:
+          SVN_USERNAME: ${{ secrets.SVN_USERNAME }}
+          SVN_PASSWORD: ${{ secrets.SVN_PASSWORD }}
+          SLUG: selective-entity-sync
+          IGNORE_OTHER_FILES: true

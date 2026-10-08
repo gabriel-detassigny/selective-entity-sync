@@ -40,6 +40,10 @@ Copying a whole database (or whole tables) overwrites everything created on the 
 
 Users, comments, orders and other non-content data, by design. Site settings, themes, plugins, menus, templates and global styles are not synced either.
 
+= Source code =
+
+The full source code, tests and issue tracker are on [GitHub](https://github.com/gabriel-detassigny/selective-entity-sync). The admin screen's JavaScript in `build/` is compiled from `src-js/` in that repository with `@wordpress/scripts`: run `npm install` and `npm run build` to rebuild it. Contributions are welcome; see `CONTRIBUTING.md` in the repository.
+
 == Installation ==
 
 1. Install and activate the plugin on **both** the source and the target site.
