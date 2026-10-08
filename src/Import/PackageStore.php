@@ -56,7 +56,7 @@ class PackageStore implements Hookable {
 	public function store_file( string $path, string $name = 'package.zip' ): string {
 		$tmp = wp_tempnam( $name );
 		if ( ! $tmp || ! copy( $path, $tmp ) ) {
-			throw new ImportException( __( 'The package could not be copied.', 'selective-entity-sync' ) );
+			throw new ImportException( esc_html__( 'The package could not be copied.', 'selective-entity-sync' ) );
 		}
 
 		try {
@@ -113,8 +113,8 @@ class PackageStore implements Hookable {
 			throw new ImportException(
 				sprintf(
 					/* translators: %s: Upload error message. */
-					__( 'The package could not be uploaded: %s', 'selective-entity-sync' ),
-					(string) ( $result['error'] ?? __( 'unknown error', 'selective-entity-sync' ) )
+					esc_html__( 'The package could not be uploaded: %s', 'selective-entity-sync' ),
+					esc_html( (string) ( $result['error'] ?? __( 'unknown error', 'selective-entity-sync' ) ) )
 				)
 			);
 		}
@@ -222,7 +222,7 @@ class PackageStore implements Hookable {
 		$directory = $this->get_directory();
 
 		if ( ! wp_mkdir_p( $directory ) ) {
-			throw new ImportException( __( 'The package storage directory could not be created.', 'selective-entity-sync' ) );
+			throw new ImportException( esc_html__( 'The package storage directory could not be created.', 'selective-entity-sync' ) );
 		}
 
 		$filesystem = $this->filesystem();

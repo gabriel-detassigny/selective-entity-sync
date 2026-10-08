@@ -219,8 +219,8 @@ class PostHandler implements ImportHandler {
 			throw new ImportException(
 				sprintf(
 					/* translators: %s: Post title. */
-					__( 'You are not allowed to create or edit "%s".', 'selective-entity-sync' ),
-					$postarr['post_title']
+					esc_html__( 'You are not allowed to create or edit "%s".', 'selective-entity-sync' ),
+					esc_html( $postarr['post_title'] )
 				)
 			);
 		}
@@ -237,9 +237,9 @@ class PostHandler implements ImportHandler {
 			throw new ImportException(
 				sprintf(
 					/* translators: 1: Post title, 2: Error message. */
-					__( '"%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
-					$postarr['post_title'],
-					$result->get_error_message()
+					esc_html__( '"%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
+					esc_html( $postarr['post_title'] ),
+					esc_html( $result->get_error_message() )
 				)
 			);
 		}

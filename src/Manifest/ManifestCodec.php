@@ -46,7 +46,7 @@ class ManifestCodec {
 		$json = wp_json_encode( $data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE );
 
 		if ( ! is_string( $json ) ) {
-			throw new ManifestException( __( 'The manifest could not be encoded as JSON.', 'selective-entity-sync' ) );
+			throw new ManifestException( esc_html__( 'The manifest could not be encoded as JSON.', 'selective-entity-sync' ) );
 		}
 
 		return $json;
@@ -66,16 +66,16 @@ class ManifestCodec {
 			throw new ManifestException(
 				sprintf(
 					/* translators: %s: JSON parser error message. */
-					__( 'The manifest is not valid JSON: %s', 'selective-entity-sync' ),
-					$e->getMessage()
+					esc_html__( 'The manifest is not valid JSON: %s', 'selective-entity-sync' ),
+					esc_html( $e->getMessage() )
 				),
 				0,
-				$e
+				$e // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Previous exception, not output.
 			);
 		}
 
 		if ( ! is_array( $data ) ) {
-			throw new ManifestException( __( 'The manifest must be a JSON object.', 'selective-entity-sync' ) );
+			throw new ManifestException( esc_html__( 'The manifest must be a JSON object.', 'selective-entity-sync' ) );
 		}
 
 		$this->schema->validate( $data );

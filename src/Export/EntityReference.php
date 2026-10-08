@@ -42,7 +42,7 @@ final class EntityReference {
 	 */
 	public function __construct( string $object_type, int $id ) {
 		if ( self::POST !== $object_type && self::TERM !== $object_type ) {
-			throw new InvalidArgumentException( sprintf( 'Unsupported object type "%s".', $object_type ) );
+			throw new InvalidArgumentException( sprintf( 'Unsupported object type "%s".', esc_html( $object_type ) ) );
 		}
 		if ( $id < 1 ) {
 			throw new InvalidArgumentException( 'Object IDs must be positive.' );

@@ -151,7 +151,7 @@ class EntityUuid {
 	 */
 	private function assert_supported_type( string $object_type ): void {
 		if ( ! in_array( $object_type, self::OBJECT_TYPES, true ) ) {
-			throw new InvalidArgumentException( sprintf( 'Unsupported object type "%s".', $object_type ) );
+			throw new InvalidArgumentException( sprintf( 'Unsupported object type "%s".', esc_html( $object_type ) ) );
 		}
 	}
 
@@ -168,7 +168,7 @@ class EntityUuid {
 
 		$exists = 'post' === $object_type ? null !== get_post( $object_id ) : get_term( $object_id ) instanceof \WP_Term;
 		if ( ! $exists ) {
-			throw new InvalidArgumentException( sprintf( '%s %d does not exist.', ucfirst( $object_type ), $object_id ) );
+			throw new InvalidArgumentException( sprintf( '%s %d does not exist.', esc_html( ucfirst( $object_type ) ), (int) $object_id ) );
 		}
 	}
 }

@@ -13,6 +13,7 @@ use SelectiveEntitySync\Export\ExportSettings;
 use SelectiveEntitySync\Exception\SyncException;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
+use SelectiveEntitySync\Support\PlainText;
 use WP_Error;
 use WP_HTTP_Response;
 use WP_REST_Request;
@@ -272,6 +273,6 @@ class ExportController extends Controller {
 	 * @return WP_Error
 	 */
 	private function export_error( SyncException $e ): WP_Error {
-		return new WP_Error( 'selective_entity_sync_export_failed', $e->getMessage(), array( 'status' => 400 ) );
+		return new WP_Error( 'selective_entity_sync_export_failed', PlainText::from_exception( $e ), array( 'status' => 400 ) );
 	}
 }

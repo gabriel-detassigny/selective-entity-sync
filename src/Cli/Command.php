@@ -13,6 +13,7 @@ use SelectiveEntitySync\Import\Importer;
 use SelectiveEntitySync\Import\ImportPlan;
 use SelectiveEntitySync\Package\PackageReader;
 use SelectiveEntitySync\Storage\TempStorage;
+use SelectiveEntitySync\Support\PlainText;
 use WP_CLI;
 
 /**
@@ -116,7 +117,7 @@ class Command {
 
 			$result = $this->exporter->export( $post_ids );
 		} catch ( SyncException $e ) {
-			WP_CLI::error( $e->getMessage() );
+			WP_CLI::error( PlainText::from_exception( $e ) );
 			return;
 		}
 
@@ -173,7 +174,7 @@ class Command {
 			try {
 				$plan = $this->importer->plan( $this->reader->read_manifest( $file ) );
 			} catch ( SyncException $e ) {
-				WP_CLI::error( $e->getMessage() );
+				WP_CLI::error( PlainText::from_exception( $e ) );
 				return;
 			}
 
@@ -192,7 +193,7 @@ class Command {
 			$directory = $this->storage->create_directory();
 			$report    = $this->importer->import( $this->reader->read( $file, $directory ), $skip );
 		} catch ( SyncException $e ) {
-			WP_CLI::error( $e->getMessage() );
+			WP_CLI::error( PlainText::from_exception( $e ) );
 			return;
 		} finally {
 			if ( null !== $directory ) {

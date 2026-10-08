@@ -16,6 +16,7 @@ use SelectiveEntitySync\Import\PackageStore;
 use SelectiveEntitySync\Package\PackageReader;
 use SelectiveEntitySync\Storage\TempStorage;
 use SelectiveEntitySync\Support\Capabilities;
+use SelectiveEntitySync\Support\PlainText;
 use WP_Error;
 use WP_REST_Request;
 use WP_REST_Response;
@@ -367,6 +368,6 @@ class ImportController extends Controller {
 	 * @return WP_Error
 	 */
 	private function error( SyncException $e ): WP_Error {
-		return new WP_Error( 'selective_entity_sync_import_failed', $e->getMessage(), array( 'status' => 400 ) );
+		return new WP_Error( 'selective_entity_sync_import_failed', PlainText::from_exception( $e ), array( 'status' => 400 ) );
 	}
 }

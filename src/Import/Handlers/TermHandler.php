@@ -111,8 +111,8 @@ class TermHandler implements ImportHandler {
 			throw new ImportException(
 				sprintf(
 					/* translators: %s: Term name. */
-					__( 'You are not allowed to create or edit the term "%s".', 'selective-entity-sync' ),
-					(string) $data['name']
+					esc_html__( 'You are not allowed to create or edit the term "%s".', 'selective-entity-sync' ),
+					esc_html( (string) $data['name'] )
 				)
 			);
 		}
@@ -128,9 +128,9 @@ class TermHandler implements ImportHandler {
 			throw new ImportException(
 				sprintf(
 					/* translators: 1: Term name, 2: Error message. */
-					__( 'The term "%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
-					(string) $data['name'],
-					$result->get_error_message()
+					esc_html__( 'The term "%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
+					esc_html( (string) $data['name'] ),
+					esc_html( $result->get_error_message() )
 				)
 			);
 		}

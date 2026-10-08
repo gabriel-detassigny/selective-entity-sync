@@ -241,6 +241,23 @@ class ImportControllerTest extends RestTestCase {
 		}
 	}
 
+	public function test_error_messages_are_plain_text(): void {
+		$this->login_as( 'administrator' );
+		$token = $this->store( $this->make_package( self::factory()->post->create() ) );
+		$path  = (string) ( new PackageStore() )->get_path( $token );
+
+		// Replace the stored package with one whose manifest is invalid ("…" quotes in the message).
+		$zip = new \ZipArchive();
+		$zip->open( $path, \ZipArchive::OVERWRITE );
+		$zip->addFromString( 'manifest.json', '{"schema_version":1}' );
+		$zip->close();
+
+		$response = $this->request( 'GET', '/import/packages/' . $token );
+
+		$this->assertSame( 400, $response->get_status() );
+		$this->assertStringContainsString( 'invalid: "', $response->get_data()['message'], 'The admin app renders messages as text, so they must not hold HTML entities.' );
+	}
+
 	public function test_scheduled_cleanup_removes_expired_packages(): void {
 		$this->login_as( 'administrator' );
 		$token = $this->store( $this->make_package( self::factory()->post->create() ) );

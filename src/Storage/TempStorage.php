@@ -71,7 +71,7 @@ class TempStorage implements Hookable {
 		$directory = $this->get_base_directory() . '/' . wp_generate_uuid4();
 
 		if ( ! wp_mkdir_p( $directory ) ) {
-			throw new SyncException( __( 'A temporary working directory could not be created.', 'selective-entity-sync' ) );
+			throw new SyncException( esc_html__( 'A temporary working directory could not be created.', 'selective-entity-sync' ) );
 		}
 
 		// Packages hold unpublished content: keep them private to this system user (shared hosting).

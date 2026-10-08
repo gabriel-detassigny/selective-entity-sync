@@ -156,8 +156,8 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 			throw new ImportException(
 				sprintf(
 					/* translators: %s: Media title. */
-					__( 'You are not allowed to upload or edit the media "%s".', 'selective-entity-sync' ),
-					(string) ( $entity['data']['post_title'] ?? '' )
+					esc_html__( 'You are not allowed to upload or edit the media "%s".', 'selective-entity-sync' ),
+					esc_html( (string) ( $entity['data']['post_title'] ?? '' ) )
 				)
 			);
 		}
@@ -187,7 +187,14 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 
 			$result = wp_update_post( wp_slash( array_merge( $fields, array( 'ID' => $attachment_id ) ) ), true );
 			if ( $result instanceof WP_Error ) {
-				throw $this->error( $fields['post_title'], $result );
+				throw new ImportException(
+					sprintf(
+						/* translators: 1: Media title, 2: Error message. */
+						esc_html__( 'The media "%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
+						esc_html( (string) $fields['post_title'] ),
+						esc_html( $result->get_error_message() )
+					)
+				);
 			}
 		} else {
 			$attachment_id = $this->create( $source, $entity, $fields );
@@ -236,7 +243,14 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 
 		if ( $attachment_id instanceof WP_Error ) {
 			wp_delete_file( $upload['file'] );
-			throw $this->error( (string) $fields['post_title'], $attachment_id );
+			throw new ImportException(
+				sprintf(
+					/* translators: 1: Media title, 2: Error message. */
+					esc_html__( 'The media "%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
+					esc_html( (string) $fields['post_title'] ),
+					esc_html( $attachment_id->get_error_message() )
+				)
+			);
 		}
 
 		wp_update_attachment_metadata( $attachment_id, wp_generate_attachment_metadata( $attachment_id, $upload['file'] ) );
@@ -291,8 +305,8 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 			throw new ImportException(
 				sprintf(
 					/* translators: %s: File name. */
-					__( 'The file "%s" could not be copied for import.', 'selective-entity-sync' ),
-					$name
+					esc_html__( 'The file "%s" could not be copied for import.', 'selective-entity-sync' ),
+					esc_html( $name )
 				)
 			);
 		}
@@ -315,9 +329,9 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 			throw new ImportException(
 				sprintf(
 					/* translators: 1: File name, 2: Error message. */
-					__( 'The file "%1$s" could not be imported: %2$s', 'selective-entity-sync' ),
-					$name,
-					(string) ( $upload['error'] ?? __( 'unknown error', 'selective-entity-sync' ) )
+					esc_html__( 'The file "%1$s" could not be imported: %2$s', 'selective-entity-sync' ),
+					esc_html( $name ),
+					esc_html( (string) ( $upload['error'] ?? __( 'unknown error', 'selective-entity-sync' ) ) )
 				)
 			);
 		}
@@ -380,23 +394,5 @@ class AttachmentHandler implements ImportHandler, LinksExistingEntities {
 		require_once ABSPATH . 'wp-admin/includes/file.php';
 		require_once ABSPATH . 'wp-admin/includes/image.php';
 		require_once ABSPATH . 'wp-admin/includes/media.php';
-	}
-
-	/**
-	 * Builds an exception from a WP_Error.
-	 *
-	 * @param string   $title Attachment title.
-	 * @param WP_Error $error Error.
-	 * @return ImportException
-	 */
-	private function error( string $title, WP_Error $error ): ImportException {
-		return new ImportException(
-			sprintf(
-				/* translators: 1: Media title, 2: Error message. */
-				__( 'The media "%1$s" could not be saved: %2$s', 'selective-entity-sync' ),
-				$title,
-				$error->get_error_message()
-			)
-		);
 	}
 }

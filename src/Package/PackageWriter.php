@@ -65,8 +65,8 @@ class PackageWriter {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The file path "%s" is not allowed in a package.', 'selective-entity-sync' ),
-						$package_path
+						esc_html__( 'The file path "%s" is not allowed in a package.', 'selective-entity-sync' ),
+						esc_html( $package_path )
 					)
 				);
 			}
@@ -74,8 +74,8 @@ class PackageWriter {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The file for %s could not be read.', 'selective-entity-sync' ),
-						$package_path
+						esc_html__( 'The file for %s could not be read.', 'selective-entity-sync' ),
+						esc_html( $package_path )
 					)
 				);
 			}
@@ -121,7 +121,7 @@ class PackageWriter {
 	private function write_zip( string $json, array $files, string $destination ): void {
 		$zip = new ZipArchive();
 		if ( true !== $zip->open( $destination, ZipArchive::CREATE | ZipArchive::OVERWRITE ) ) {
-			throw new PackageException( __( 'The package file could not be created.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package file could not be created.', 'selective-entity-sync' ) );
 		}
 
 		$ok = $zip->addFromString( PackagePath::MANIFEST_FILE, $json );
@@ -130,7 +130,7 @@ class PackageWriter {
 		}
 
 		if ( ! $ok || ! $zip->close() ) {
-			throw new PackageException( __( 'The package file could not be written.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package file could not be written.', 'selective-entity-sync' ) );
 		}
 	}
 
@@ -142,7 +142,7 @@ class PackageWriter {
 	 */
 	private function assert_zip_available(): void {
 		if ( ! class_exists( ZipArchive::class ) ) {
-			throw new PackageException( __( 'The PHP zip extension is required to create packages.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The PHP zip extension is required to create packages.', 'selective-entity-sync' ) );
 		}
 	}
 }

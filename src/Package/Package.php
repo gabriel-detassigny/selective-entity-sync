@@ -85,8 +85,8 @@ class Package {
 			throw new PackageException(
 				sprintf(
 					/* translators: %s: File path inside the package. */
-					__( 'The file %s is not part of this package.', 'selective-entity-sync' ),
-					$package_path
+					esc_html__( 'The file %s is not part of this package.', 'selective-entity-sync' ),
+					esc_html( $package_path )
 				)
 			);
 		}
@@ -111,14 +111,14 @@ class Package {
 	private function extract( string $package_path, string $sha256, string $path ): void {
 		$zip = new ZipArchive();
 		if ( true !== $zip->open( (string) $this->zip_path ) ) {
-			throw new PackageException( __( 'The package file could not be read.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package file could not be read.', 'selective-entity-sync' ) );
 		}
 
 		$extracted = $zip->extractTo( $this->directory, $package_path );
 		$zip->close();
 
 		if ( ! $extracted || ! is_file( $path ) ) {
-			throw new PackageException( __( 'The package could not be extracted.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package could not be extracted.', 'selective-entity-sync' ) );
 		}
 
 		if ( ! hash_equals( $sha256, (string) hash_file( 'sha256', $path ) ) ) {
@@ -126,8 +126,8 @@ class Package {
 			throw new PackageException(
 				sprintf(
 					/* translators: %s: File path inside the package. */
-					__( 'The file %s is corrupted: its checksum does not match the manifest.', 'selective-entity-sync' ),
-					$package_path
+					esc_html__( 'The file %s is corrupted: its checksum does not match the manifest.', 'selective-entity-sync' ),
+					esc_html( $package_path )
 				)
 			);
 		}

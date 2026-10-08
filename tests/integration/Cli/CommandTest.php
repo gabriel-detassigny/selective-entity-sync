@@ -113,4 +113,19 @@ class CommandTest extends WP_UnitTestCase {
 
 		$this->assertNull( ( new \SelectiveEntitySync\Identity\EntityUuid() )->find( 'post', $post ), 'Nothing is exported (no UUIDs assigned) when the destination is unusable.' );
 	}
+
+	public function test_errors_are_printed_as_plain_text(): void {
+		$file = $this->work_dir . '/invalid.zip';
+		$zip  = new \ZipArchive();
+		$zip->open( $file, \ZipArchive::CREATE );
+		$zip->addFromString( 'manifest.json', '{"schema_version":1}' );
+		$zip->close();
+
+		try {
+			$this->command()->import( array( $file ), array() );
+			$this->fail( 'The import should have stopped.' );
+		} catch ( ExitException $e ) {
+			$this->assertStringContainsString( 'invalid: "', $this->logger->stderr, 'Terminal output must not hold HTML entities.' );
+		}
+	}
 }

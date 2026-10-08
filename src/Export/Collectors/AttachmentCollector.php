@@ -205,7 +205,7 @@ class AttachmentCollector implements EntityCollector {
 	private function get_post( EntityReference $reference ): WP_Post {
 		$post = get_post( $reference->get_id() );
 		if ( ! $post instanceof WP_Post ) {
-			throw new \InvalidArgumentException( sprintf( 'Attachment %d does not exist.', $reference->get_id() ) );
+			throw new \InvalidArgumentException( sprintf( 'Attachment %d does not exist.', (int) $reference->get_id() ) );
 		}
 
 		return $post;

@@ -88,7 +88,7 @@ class PackageReader {
 		$manifest = $this->read_manifest( $zip_path );
 
 		if ( ! is_dir( $extract_dir ) || ! wp_is_writable( $extract_dir ) ) {
-			throw new PackageException( __( 'The package could not be extracted: the working directory is not writable.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package could not be extracted: the working directory is not writable.', 'selective-entity-sync' ) );
 		}
 
 		return new Package( $manifest, $extract_dir, $zip_path );
@@ -133,31 +133,31 @@ class PackageReader {
 	 */
 	private function open_zip( string $zip_path, array $limits ): ZipArchive {
 		if ( ! class_exists( ZipArchive::class ) ) {
-			throw new PackageException( __( 'The PHP zip extension is required to read packages.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The PHP zip extension is required to read packages.', 'selective-entity-sync' ) );
 		}
 
 		if ( ! is_file( $zip_path ) || ! is_readable( $zip_path ) ) {
-			throw new PackageException( __( 'The package file could not be read.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package file could not be read.', 'selective-entity-sync' ) );
 		}
 
 		if ( filesize( $zip_path ) > $limits['max_package_size'] ) {
 			throw new PackageException(
 				sprintf(
 					/* translators: %s: Maximum package size, e.g. "512 MB". */
-					__( 'The package is larger than the maximum allowed size of %s.', 'selective-entity-sync' ),
-					size_format( $limits['max_package_size'] )
+					esc_html__( 'The package is larger than the maximum allowed size of %s.', 'selective-entity-sync' ),
+					esc_html( size_format( $limits['max_package_size'] ) )
 				)
 			);
 		}
 
 		$zip = new ZipArchive();
 		if ( true !== $zip->open( $zip_path ) ) {
-			throw new PackageException( __( 'The file is not a valid package (zip) file.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The file is not a valid package (zip) file.', 'selective-entity-sync' ) );
 		}
 
 		if ( $zip->numFiles > $limits['max_entries'] ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- ZipArchive property.
 			$zip->close();
-			throw new PackageException( __( 'The package contains too many files.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package contains too many files.', 'selective-entity-sync' ) );
 		}
 
 		return $zip;
@@ -174,22 +174,22 @@ class PackageReader {
 	private function load_manifest( ZipArchive $zip, array $limits ): Manifest {
 		$stat = $zip->statName( PackagePath::MANIFEST_FILE );
 		if ( false === $stat ) {
-			throw new PackageException( __( 'The package does not contain a manifest.json file.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package does not contain a manifest.json file.', 'selective-entity-sync' ) );
 		}
 
 		if ( $stat['size'] > $limits['max_manifest_size'] ) {
-			throw new PackageException( __( 'The package manifest is too large.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package manifest is too large.', 'selective-entity-sync' ) );
 		}
 
 		$json = $zip->getFromName( PackagePath::MANIFEST_FILE );
 		if ( false === $json ) {
-			throw new PackageException( __( 'The package manifest could not be read.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package manifest could not be read.', 'selective-entity-sync' ) );
 		}
 
 		try {
 			return $this->codec->decode( $json );
 		} catch ( \SelectiveEntitySync\Manifest\ManifestException $e ) {
-			throw new PackageException( $e->getMessage(), 0, $e );
+			throw new PackageException( esc_html( $e->getMessage() ), 0, $e ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- $e is the previous exception, not output.
 		}
 	}
 
@@ -209,7 +209,7 @@ class PackageReader {
 		for ( $i = 0; $i < $zip->numFiles; $i++ ) { // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- ZipArchive property.
 			$stat = $zip->statIndex( $i );
 			if ( false === $stat ) {
-				throw new PackageException( __( 'The package could not be read.', 'selective-entity-sync' ) );
+				throw new PackageException( esc_html__( 'The package could not be read.', 'selective-entity-sync' ) );
 			}
 
 			$name = $stat['name'];
@@ -228,8 +228,8 @@ class PackageReader {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: Entry name inside the zip file. */
-						__( 'The package contains an unexpected file: %s', 'selective-entity-sync' ),
-						$name
+						esc_html__( 'The package contains an unexpected file: %s', 'selective-entity-sync' ),
+						esc_html( $name )
 					)
 				);
 			}
@@ -238,15 +238,15 @@ class PackageReader {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The size of %s does not match the manifest.', 'selective-entity-sync' ),
-						$name
+						esc_html__( 'The size of %s does not match the manifest.', 'selective-entity-sync' ),
+						esc_html( $name )
 					)
 				);
 			}
 
 			$total += $file['size'];
 			if ( $total > $limits['max_uncompressed_size'] ) {
-				throw new PackageException( __( 'The package contents are larger than the maximum allowed size.', 'selective-entity-sync' ) );
+				throw new PackageException( esc_html__( 'The package contents are larger than the maximum allowed size.', 'selective-entity-sync' ) );
 			}
 
 			$this->assert_allowed_type( $name );
@@ -258,8 +258,8 @@ class PackageReader {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The package is missing the file %s.', 'selective-entity-sync' ),
-						$file['path']
+						esc_html__( 'The package is missing the file %s.', 'selective-entity-sync' ),
+						esc_html( $file['path'] )
 					)
 				);
 			}
@@ -280,8 +280,8 @@ class PackageReader {
 			throw new PackageException(
 				sprintf(
 					/* translators: %s: File path inside the package. */
-					__( 'The package contains a file type that is not allowed: %s', 'selective-entity-sync' ),
-					$path
+					esc_html__( 'The package contains a file type that is not allowed: %s', 'selective-entity-sync' ),
+					esc_html( $path )
 				)
 			);
 		}
@@ -303,12 +303,12 @@ class PackageReader {
 		}
 
 		if ( ! is_dir( $extract_dir ) || ! wp_is_writable( $extract_dir ) ) {
-			throw new PackageException( __( 'The package could not be extracted: the working directory is not writable.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package could not be extracted: the working directory is not writable.', 'selective-entity-sync' ) );
 		}
 
 		// Entry names were validated against the manifest, so only safe relative paths are extracted.
 		if ( ! $zip->extractTo( $extract_dir, $paths ) ) {
-			throw new PackageException( __( 'The package could not be extracted.', 'selective-entity-sync' ) );
+			throw new PackageException( esc_html__( 'The package could not be extracted.', 'selective-entity-sync' ) );
 		}
 	}
 
@@ -327,8 +327,8 @@ class PackageReader {
 				throw new PackageException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The file %s is corrupted: its checksum does not match the manifest.', 'selective-entity-sync' ),
-						$file['path']
+						esc_html__( 'The file %s is corrupted: its checksum does not match the manifest.', 'selective-entity-sync' ),
+						esc_html( $file['path'] )
 					)
 				);
 			}

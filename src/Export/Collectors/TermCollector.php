@@ -93,7 +93,7 @@ class TermCollector implements EntityCollector {
 	private function get_term( EntityReference $reference ): WP_Term {
 		$term = get_term( $reference->get_id() );
 		if ( ! $term instanceof WP_Term ) {
-			throw new \InvalidArgumentException( sprintf( 'Term %d does not exist.', $reference->get_id() ) );
+			throw new \InvalidArgumentException( sprintf( 'Term %d does not exist.', (int) $reference->get_id() ) );
 		}
 
 		return $term;

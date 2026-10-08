@@ -262,7 +262,7 @@ Fires when an entity fails to import. The import carries on with the other entit
 | Parameter | Type | Description |
 |---|---|---|
 | `$entity` | `array` | Manifest entity. |
-| `$message` | `string` | Error message. |
+| `$message` | `string` | Error message (plain text). |
 
 Since `0.1.0`.
 

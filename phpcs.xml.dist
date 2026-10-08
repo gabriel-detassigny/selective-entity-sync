@@ -28,6 +28,11 @@
 
 	<rule ref="WordPress-VIP-Go"/>
 
+	<!-- VIP Go silences this sniff, but WordPress.org's Plugin Check reports it as an error. -->
+	<rule ref="WordPress.Security.EscapeOutput.ExceptionNotEscaped">
+		<severity>5</severity>
+	</rule>
+
 	<rule ref="WordPress-Extra">
 		<!-- PSR-4 autoloading is used instead of class-*.php file names. -->
 		<exclude name="WordPress.Files.FileName"/>

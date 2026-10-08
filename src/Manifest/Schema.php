@@ -60,16 +60,16 @@ class Schema {
 	 */
 	private function validate_schema_version( $version ): void {
 		if ( ! is_int( $version ) || $version < 1 ) {
-			throw new ManifestException( __( 'The manifest has no valid schema version.', 'selective-entity-sync' ) );
+			throw new ManifestException( esc_html__( 'The manifest has no valid schema version.', 'selective-entity-sync' ) );
 		}
 
 		if ( $version > self::VERSION ) {
 			throw new ManifestException(
 				sprintf(
 					/* translators: 1: Manifest schema version, 2: Highest schema version supported by this site. */
-					__( 'This package uses manifest format %1$d, but this site only supports up to format %2$d. Please update Selective Entity Sync on this site.', 'selective-entity-sync' ),
-					$version,
-					self::VERSION
+					esc_html__( 'This package uses manifest format %1$d, but this site only supports up to format %2$d. Please update Selective Entity Sync on this site.', 'selective-entity-sync' ),
+					(int) $version,
+					(int) self::VERSION
 				)
 			);
 		}
@@ -86,12 +86,12 @@ class Schema {
 	 */
 	private function validate_string_map( array $data, string $key, array $keys ): void {
 		if ( ! isset( $data[ $key ] ) || ! is_array( $data[ $key ] ) ) {
-			throw $this->invalid_field( $key );
+			$this->reject_field( $key );
 		}
 
 		foreach ( $keys as $field ) {
 			if ( ! isset( $data[ $key ][ $field ] ) || ! is_string( $data[ $key ][ $field ] ) || '' === $data[ $key ][ $field ] ) {
-				throw $this->invalid_field( $key . '.' . $field );
+				$this->reject_field( $key . '.' . $field );
 			}
 		}
 	}
@@ -105,7 +105,7 @@ class Schema {
 	 */
 	private function validate_entities( $entities ): void {
 		if ( ! is_array( $entities ) || ! $this->is_list( $entities ) ) {
-			throw $this->invalid_field( 'entities' );
+			$this->reject_field( 'entities' );
 		}
 
 		$seen = array();
@@ -113,22 +113,22 @@ class Schema {
 			$field = sprintf( 'entities[%d]', $index );
 
 			if ( ! is_array( $entity ) ) {
-				throw $this->invalid_field( $field );
+				$this->reject_field( $field );
 			}
 			if ( ! isset( $entity['uuid'] ) || ! is_string( $entity['uuid'] ) || ! Uuid::is_valid( $entity['uuid'] ) ) {
-				throw $this->invalid_field( $field . '.uuid' );
+				$this->reject_field( $field . '.uuid' );
 			}
 			if ( ! isset( $entity['type'] ) || ! is_string( $entity['type'] ) || 1 !== preg_match( '/^[a-z][a-z0-9_]{0,31}$/D', $entity['type'] ) ) {
-				throw $this->invalid_field( $field . '.type' );
+				$this->reject_field( $field . '.type' );
 			}
 			if ( ! isset( $entity['source_id'] ) || ! is_int( $entity['source_id'] ) || $entity['source_id'] < 1 ) {
-				throw $this->invalid_field( $field . '.source_id' );
+				$this->reject_field( $field . '.source_id' );
 			}
 			if ( ! isset( $entity['data'] ) || ! is_array( $entity['data'] ) ) {
-				throw $this->invalid_field( $field . '.data' );
+				$this->reject_field( $field . '.data' );
 			}
 			if ( isset( $entity['reference_only'] ) && ! is_bool( $entity['reference_only'] ) ) {
-				throw $this->invalid_field( $field . '.reference_only' );
+				$this->reject_field( $field . '.reference_only' );
 			}
 
 			$uuid = strtolower( $entity['uuid'] );
@@ -136,8 +136,8 @@ class Schema {
 				throw new ManifestException(
 					sprintf(
 						/* translators: %s: Entity UUID. */
-						__( 'The manifest contains the entity %s more than once.', 'selective-entity-sync' ),
-						$uuid
+						esc_html__( 'The manifest contains the entity %s more than once.', 'selective-entity-sync' ),
+						esc_html( $uuid )
 					)
 				);
 			}
@@ -154,7 +154,7 @@ class Schema {
 	 */
 	private function validate_files( $files ): void {
 		if ( ! is_array( $files ) || ! $this->is_list( $files ) ) {
-			throw $this->invalid_field( 'files' );
+			$this->reject_field( 'files' );
 		}
 
 		$seen = array();
@@ -162,24 +162,24 @@ class Schema {
 			$field = sprintf( 'files[%d]', $index );
 
 			if ( ! is_array( $file ) ) {
-				throw $this->invalid_field( $field );
+				$this->reject_field( $field );
 			}
 			if ( ! isset( $file['path'] ) || ! is_string( $file['path'] ) || ! PackagePath::is_valid( $file['path'] ) ) {
-				throw $this->invalid_field( $field . '.path' );
+				$this->reject_field( $field . '.path' );
 			}
 			if ( ! isset( $file['sha256'] ) || ! is_string( $file['sha256'] ) || 1 !== preg_match( '/^[0-9a-f]{64}$/D', $file['sha256'] ) ) {
-				throw $this->invalid_field( $field . '.sha256' );
+				$this->reject_field( $field . '.sha256' );
 			}
 			if ( ! isset( $file['size'] ) || ! is_int( $file['size'] ) || $file['size'] < 0 ) {
-				throw $this->invalid_field( $field . '.size' );
+				$this->reject_field( $field . '.size' );
 			}
 
 			if ( isset( $seen[ $file['path'] ] ) ) {
 				throw new ManifestException(
 					sprintf(
 						/* translators: %s: File path inside the package. */
-						__( 'The manifest lists the file %s more than once.', 'selective-entity-sync' ),
-						$file['path']
+						esc_html__( 'The manifest lists the file %s more than once.', 'selective-entity-sync' ),
+						esc_html( $file['path'] )
 					)
 				);
 			}
@@ -198,17 +198,18 @@ class Schema {
 	}
 
 	/**
-	 * Builds the exception for a missing or invalid field.
+	 * Throws the exception for a missing or invalid field.
 	 *
 	 * @param string $field Field path, e.g. "entities[2].uuid".
-	 * @return ManifestException
+	 * @return void
+	 * @throws ManifestException Always.
 	 */
-	private function invalid_field( string $field ): ManifestException {
-		return new ManifestException(
+	private function reject_field( string $field ): void {
+		throw new ManifestException(
 			sprintf(
 				/* translators: %s: Manifest field path, e.g. "entities[2].uuid". */
-				__( 'The manifest is invalid: "%s" is missing or malformed.', 'selective-entity-sync' ),
-				$field
+				esc_html__( 'The manifest is invalid: "%s" is missing or malformed.', 'selective-entity-sync' ),
+				esc_html( $field )
 			)
 		);
 	}

@@ -56,7 +56,8 @@ class SchemaTest extends TestCase {
 		$data = $mutate( $this->valid_manifest_data() );
 
 		$this->expectException( ManifestException::class );
-		$this->expectExceptionMessage( $expected_reason );
+		// Messages are HTML-escaped when thrown.
+		$this->expectExceptionMessage( htmlspecialchars( $expected_reason, ENT_QUOTES ) );
 
 		( new Schema() )->validate( $data );
 	}

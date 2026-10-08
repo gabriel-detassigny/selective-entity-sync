@@ -98,7 +98,7 @@ class Manifest {
 			|| ! is_string( $entity['uuid'] ) || ! Uuid::is_valid( $entity['uuid'] )
 			|| ! is_int( $entity['source_id'] ) || ! is_array( $entity['data'] )
 		) {
-			throw new ManifestException( __( 'Cannot add an entity without a valid UUID, type, source ID and data.', 'selective-entity-sync' ) );
+			throw new ManifestException( esc_html__( 'Cannot add an entity without a valid UUID, type, source ID and data.', 'selective-entity-sync' ) );
 		}
 
 		$uuid = strtolower( $entity['uuid'] );
@@ -106,8 +106,8 @@ class Manifest {
 			throw new ManifestException(
 				sprintf(
 					/* translators: %s: Entity UUID. */
-					__( 'The entity %s is already in the manifest.', 'selective-entity-sync' ),
-					$uuid
+					esc_html__( 'The entity %s is already in the manifest.', 'selective-entity-sync' ),
+					esc_html( $uuid )
 				)
 			);
 		}
@@ -159,8 +159,8 @@ class Manifest {
 			throw new ManifestException(
 				sprintf(
 					/* translators: %s: File path inside the package. */
-					__( 'The file path "%s" is not allowed in a package.', 'selective-entity-sync' ),
-					$path
+					esc_html__( 'The file path "%s" is not allowed in a package.', 'selective-entity-sync' ),
+					esc_html( $path )
 				)
 			);
 		}
@@ -168,8 +168,8 @@ class Manifest {
 			throw new ManifestException(
 				sprintf(
 					/* translators: %s: File path inside the package. */
-					__( 'The file %s is already in the manifest.', 'selective-entity-sync' ),
-					$path
+					esc_html__( 'The file %s is already in the manifest.', 'selective-entity-sync' ),
+					esc_html( $path )
 				)
 			);
 		}

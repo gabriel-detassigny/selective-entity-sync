@@ -12,6 +12,7 @@ use SelectiveEntitySync\Import\Handlers\ImportHandler;
 use SelectiveEntitySync\Import\Handlers\LinksExistingEntities;
 use SelectiveEntitySync\Manifest\Manifest;
 use SelectiveEntitySync\Package\Package;
+use SelectiveEntitySync\Support\PlainText;
 use Throwable;
 
 /**
@@ -290,7 +291,7 @@ class Importer {
 			$context->set_local_id( $item['uuid'], $new_id );
 		} catch ( Throwable $e ) {
 			$context->set_current( null );
-			$report->record( $item, ImportReport::FAILED, $local_id, $e->getMessage() );
+			$report->record( $item, ImportReport::FAILED, $local_id, PlainText::from_exception( $e ) );
 
 			/**
 			 * Fires when an entity fails to import. The import continues with the other entities.
@@ -298,9 +299,9 @@ class Importer {
 			 * @since 0.1.0
 			 *
 			 * @param array  $entity  Manifest entity.
-			 * @param string $message Error message.
+			 * @param string $message Error message (plain text).
 			 */
-			do_action( 'selective_entity_sync_import_failed', $entity, $e->getMessage() );
+			do_action( 'selective_entity_sync_import_failed', $entity, PlainText::from_exception( $e ) );
 
 			return false;
 		}

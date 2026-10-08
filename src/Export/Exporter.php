@@ -173,7 +173,7 @@ class Exporter {
 			$manifest = $this->writer->write( $plan->get_manifest(), $plan->get_files(), $path );
 		} catch ( Throwable $e ) {
 			$this->storage->delete( $directory );
-			throw new ExportException( $e->getMessage(), 0, $e );
+			throw new ExportException( esc_html( $e->getMessage() ), 0, $e ); // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- $e is the previous exception, not output.
 		}
 
 		$result = new ExportResult( $plan, $manifest, $path, $directory );
@@ -317,15 +317,15 @@ class Exporter {
 		$post_ids = array_values( array_unique( array_map( 'intval', $post_ids ) ) );
 
 		if ( array() === $post_ids ) {
-			throw new ExportException( __( 'Select at least one item to export.', 'selective-entity-sync' ) );
+			throw new ExportException( esc_html__( 'Select at least one item to export.', 'selective-entity-sync' ) );
 		}
 
 		if ( count( $post_ids ) > self::MAX_SELECTION ) {
 			throw new ExportException(
 				sprintf(
 					/* translators: %d: Maximum number of items. */
-					__( 'You can export at most %d items at once.', 'selective-entity-sync' ),
-					self::MAX_SELECTION
+					esc_html__( 'You can export at most %d items at once.', 'selective-entity-sync' ),
+					(int) self::MAX_SELECTION
 				)
 			);
 		}
@@ -340,8 +340,8 @@ class Exporter {
 				throw new ExportException(
 					sprintf(
 						/* translators: %d: Post ID. */
-						__( 'Item #%d cannot be exported: it does not exist, its type or status is not exportable, or you are not allowed to export it.', 'selective-entity-sync' ),
-						$post_id
+						esc_html__( 'Item #%d cannot be exported: it does not exist, its type or status is not exportable, or you are not allowed to export it.', 'selective-entity-sync' ),
+						(int) $post_id
 					)
 				);
 			}

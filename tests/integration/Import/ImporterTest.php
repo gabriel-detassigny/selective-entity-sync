@@ -368,7 +368,8 @@ class ImporterTest extends WP_UnitTestCase {
 			}
 
 			public function import( array $entity, ?int $local_id, ImportContext $context ): int {
-				throw new ImportException( 'Boom' );
+				// Plugin exceptions are HTML-escaped when thrown.
+				throw new ImportException( esc_html( 'Boom: "Tom & Jerry\'s"' ) );
 			}
 		};
 		add_filter(
@@ -393,8 +394,10 @@ class ImporterTest extends WP_UnitTestCase {
 		$custom_item = $report->get_item( $this->uuids->find( 'post', $custom ) );
 		$this->assertSame( ImportReport::SKIPPED, $custom_item['result'] );
 		$this->assertStringContainsString( 'temp_type', (string) $custom_item['message'] );
-		$this->assertSame( ImportReport::FAILED, $report->get_item( $this->uuids->find( 'post', $page ) )['result'] );
-		$this->assertSame( array( 'Boom' ), $failures );
+		$failed_item = $report->get_item( $this->uuids->find( 'post', $page ) );
+		$this->assertSame( ImportReport::FAILED, $failed_item['result'] );
+		$this->assertSame( 'Boom: "Tom & Jerry\'s"', $failed_item['message'], 'The report holds plain text.' );
+		$this->assertSame( array( 'Boom: "Tom & Jerry\'s"' ), $failures, 'Hooks receive plain text.' );
 		$this->assertSame( ImportReport::UPDATED, $report->get_item( $this->uuids->find( 'post', $post ) )['result'] );
 		$this->assertTrue( $report->has_failures() );
 	}

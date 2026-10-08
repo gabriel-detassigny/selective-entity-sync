@@ -59,7 +59,7 @@ class ManifestCodecTest extends TestCase {
 		unset( $data['source'] );
 
 		$this->expectException( ManifestException::class );
-		$this->expectExceptionMessage( '"source"' );
+		$this->expectExceptionMessage( '&quot;source&quot;' ); // Messages are HTML-escaped when thrown.
 
 		( new ManifestCodec( new Schema() ) )->decode( (string) json_encode( $data ) );
 	}

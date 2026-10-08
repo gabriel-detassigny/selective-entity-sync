@@ -20,6 +20,7 @@ abstract class TestCase extends PolyfillTestCase {
 		parent::set_up();
 		Monkey\setUp();
 		Functions\stubTranslationFunctions();
+		Functions\stubEscapeFunctions();
 		Functions\when( 'wp_json_encode' )->alias( 'json_encode' );
 	}
 
