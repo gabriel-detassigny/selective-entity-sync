@@ -20,6 +20,9 @@
 .wp-env.override.json
 .wp-env.test.json
 .wp-env.test.override.json
+.wp-env.target.json
+.wp-env.target.override.json
+/dev
 AGENTS.md
 CLAUDE.md
 CHANGELOG.md

@@ -20,6 +20,7 @@
 # Local environment
 .wp-env.override.json
 .wp-env.test.override.json
+.wp-env.target.override.json
 .env
 .DS_Store
 Thumbs.db

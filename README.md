@@ -713,8 +713,40 @@ Requirements: PHP 7.4+, Composer, Node.js 22+ (24 recommended, see `.nvmrc`), an
 composer install
 npm install
 npm run build
-npm run wp-env start        # dev site:  http://localhost:8898 (admin / password)
-npm run wp-env:test start   # test site: http://localhost:8899, used by test:php and test:e2e
+npm run sites:start         # source site: http://localhost:8898, target site: http://localhost:8897 (admin / password)
+npm run demo:source         # optional: realistic content to export on the source site
+```
+
+### Local sites
+
+The plugin moves content *between* sites, so the dev setup has two WordPress sites, each with its own database and uploads. A third site is reserved for the automated tests.
+
+| Site | Config | URL | Use it for |
+|---|---|---|---|
+| **Source** | `.wp-env.json` | http://localhost:8898 | Create or edit content and export it. `npm run demo:source` adds sample pages, posts, media, a synced pattern and nested categories. |
+| **Target** | `.wp-env.target.json` | http://localhost:8897 | Import packages exported from the source. Starts empty, like a production site you sync into. |
+| Test | `.wp-env.test.json` | http://localhost:8899 | Automated tests only (`npm run test:php`, `npm run test:e2e`). Its database is reset by every PHPUnit run. |
+
+Commands:
+- **Start / stop both dev sites:** `npm run sites:start` / `npm run sites:stop`.
+- **One site at a time:** `npm run wp-env …` targets the source, `npm run wp-env:target …` the target.
+- **WP-CLI on the target:** `npm run wp-env:target -- run cli wp post list`.
+- **Empty the target:** `npm run wp-env:target -- run cli wp site empty --uploads --yes`.
+- **Demo content on the target too:** `npm run demo:target`, e.g. to test updates and slug matching against existing content.
+
+A typical manual test:
+1. Export on the source.
+2. Import the downloaded zip on the target.
+3. Change something on the source, export again and import again: the target should show **Update** and stay free of duplicates.
+
+**Testing batching with a few items:** the target loads a development helper (`dev/mu-plugins/`) that can force small import batches. Add this to the gitignored `.wp-env.target.override.json` and run `npm run wp-env:target start -- --update`:
+
+```json
+{
+  "config": {
+    "SELECTIVE_ENTITY_SYNC_DEV_BATCH_SIZE": 2
+  }
+}
 ```
 
 | Task | Command |
@@ -727,7 +759,12 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 | End-to-end tests | `npm run test:e2e` |
 | Translations | `npm run makepot`, `composer updatepo`, `npm run makejson` (see [`AGENTS.md`](AGENTS.md)) |
 
-**Accessing the dev site from another machine.** If wp-env runs on a VM or remote box, WordPress's default `localhost` URLs won't work from your own browser. Point the dev site at a hostname in the gitignored `.wp-env.override.json`, then run `npm run wp-env start -- --update`:
+### Accessing the sites from another machine
+
+If wp-env runs on a VM or remote box, WordPress's default `localhost` URLs won't work from your own browser. Point each dev site at its own hostname in its gitignored override file, then restart it with `--update`:
+
+- **Source:** `.wp-env.override.json`, then `npm run wp-env start -- --update`.
+- **Target:** `.wp-env.target.override.json`, then `npm run wp-env:target start -- --update`, with port `8897` and a different hostname such as `mysite-target.wpenv.net`.
 
 ```json
 {
@@ -738,7 +775,7 @@ npm run wp-env:test start   # test site: http://localhost:8899, used by test:php
 }
 ```
 
-On the machine running the browser, map the hostname to the VM's IP in `/etc/hosts` (e.g. `192.168.1.50 mysite.wpenv.net`). `*.wpenv.net` resolves to `127.0.0.1` everywhere else, so WordPress's requests to itself (WP-Cron, REST API) keep working inside the container. Keep the test site on `localhost`, because Playwright runs on the same machine as wp-env. SSH port forwarding (`ssh -L 8898:localhost:8898 <vm>`) is an alternative that needs no config change.
+On the machine running the browser, map the hostnames to the VM's IP in `/etc/hosts`, e.g. `192.168.1.50 mysite.wpenv.net mysite-target.wpenv.net`. `*.wpenv.net` resolves to `127.0.0.1` everywhere else, so WordPress's requests to itself (WP-Cron, REST API) keep working inside the container. Keep the test site on `localhost`, because Playwright runs on the same machine as wp-env. SSH port forwarding (`ssh -L 8898:localhost:8898 -L 8897:localhost:8897 <vm>`) is an alternative that needs no config change.
 
 See [`CONTRIBUTING.md`](CONTRIBUTING.md) for how to contribute; detailed rules for contributors and AI agents live in [`AGENTS.md`](AGENTS.md).
 

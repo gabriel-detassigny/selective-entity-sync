@@ -23,7 +23,9 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 | Task | Command |
 |---|---|
 | Install deps | `composer install && npm install` |
-| Start / stop dev site | `npm run wp-env start` / `npm run wp-env stop` (http://localhost:8898, `admin` / `password`) |
+| Start / stop both dev sites | `npm run sites:start` / `npm run sites:stop` (source http://localhost:8898, target http://localhost:8897, `admin` / `password`) |
+| One dev site | `npm run wp-env …` (source) / `npm run wp-env:target …` (target) |
+| Demo content | `npm run demo:source` / `npm run demo:target` (`dev/demo-content.sh`, idempotent) |
 | Start / stop test site | `npm run wp-env:test start` / `npm run wp-env:test stop` (http://localhost:8899) |
 | Build JS / watch | `npm run build` / `npm run start` |
 | PHP lint / autofix | `composer lint` / `composer lint:fix` |
@@ -32,18 +34,19 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 | PHP unit tests (no WP) | `composer test:unit` |
 | PHP integration tests (test site) | `npm run test:php` |
 | E2E tests (Playwright, test site) | `npm run test:e2e` |
-| WP-CLI | `npm run wp-env run cli wp <command>` (dev) / `npm run wp-env:test run cli wp <command>` (test) |
+| WP-CLI | `npm run wp-env run cli wp <command>` (source) / `npm run wp-env:target run cli wp <command>` (target) / `npm run wp-env:test run cli wp <command>` (test) |
 | Translations | `npm run makepot` (template) → `composer updatepo` (merge into `.po`) → translate → `npm run makejson` (`.mo` + JS `.json`) |
 | Release zip | `composer install --no-dev -o && npm run build && npm run plugin-zip` |
 
 ### Environments
 
-There are two separate wp-env environments, each with its own containers and database:
+There are three separate wp-env environments, each with its own containers, database and uploads:
 
-- **Dev site** (`.wp-env.json`, port 8898): for manual work. Tests never touch it.
-- **Test site** (`.wp-env.test.json`, port 8899): used by `npm run test:php` and `npm run test:e2e`. It maps a test-only mu-plugin (`tests/e2e/mu-plugins/`) that lets e2e tests force small import batches with an `X-SES-Batch-Size` header. PHPUnit reinstalls its database on every run, so e2e specs must set up their own state, for example activating the plugin in `beforeAll`.
+- **Source dev site** (`.wp-env.json`, port 8898): manual work and exporting. Tests never touch it.
+- **Target dev site** (`.wp-env.target.json`, port 8897): importing packages exported from the source, for manual end-to-end checks of the sync. It maps the dev helper `dev/mu-plugins/batch-size.php`, which forces small batches when `SELECTIVE_ENTITY_SYNC_DEV_BATCH_SIZE` is set in `.wp-env.target.override.json`.
+- **Test site** (`.wp-env.test.json`, port 8899): used by `npm run test:php` and `npm run test:e2e`. It maps the same dev helper, which e2e tests drive with an `X-SES-Batch-Size` header. PHPUnit reinstalls its database on every run, so e2e specs must set up their own state, for example activating the plugin in `beforeAll`.
 
-Local-only tweaks go in the gitignored `.wp-env.override.json` / `.wp-env.test.override.json`. Keep `"testsEnvironment": false` in both configs, and don't use the deprecated `env.tests` / `testsPort` options.
+Local-only tweaks go in the gitignored `.wp-env.override.json` / `.wp-env.target.override.json` / `.wp-env.test.override.json`. Keep `"testsEnvironment": false` in all three configs, and don't use the deprecated `env.tests` / `testsPort` options.
 
 ## Layout
 
@@ -71,6 +74,7 @@ src-js/                     React admin app (built by @wordpress/scripts to buil
 tests/unit/                 PHPUnit + Brain Monkey. No WordPress loaded.
 tests/integration/          PHPUnit + WP test suite, runs inside wp-env.
 tests/e2e/specs/            Playwright + @wordpress/e2e-test-utils-playwright.
+dev/                        Dev-only helpers, never shipped: demo-content.sh, mu-plugins/ mapped into the target and test sites.
 languages/                  .pot / translations.
 ```
 

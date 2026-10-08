@@ -20,11 +20,12 @@ You need PHP 7.4+, Composer, Node.js (see `.nvmrc`) and Docker, or Podman with i
 composer install
 npm install
 npm run build
-npm run wp-env start        # dev site:  http://localhost:8898 (admin / password)
+npm run sites:start         # source site http://localhost:8898 + target site http://localhost:8897 (admin / password)
+npm run demo:source         # optional: sample content to export
 npm run wp-env:test start   # test site: http://localhost:8899, used by the test suites
 ```
 
-`npm run start` rebuilds the admin app on every change.
+`npm run start` rebuilds the admin app on every change. To check a change by hand, export from the **source** site and import on the **target**. The README's [Local sites](README.md#local-sites) section covers the setup.
 
 ## Before opening a pull request
 
