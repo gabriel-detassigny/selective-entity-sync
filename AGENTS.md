@@ -34,7 +34,7 @@ A WordPress plugin that moves **selected content** between two WordPress sites, 
 | PHP unit tests (no WP) | `composer test:unit` |
 | PHP integration tests (test site) | `npm run test:php` |
 | E2E tests (Playwright, test site) | `npm run test:e2e` |
-| WP-CLI | `npm run wp-env run cli wp <command>` (source) / `npm run wp-env:target run cli wp <command>` (target) / `npm run wp-env:test run cli wp <command>` (test) |
+| WP-CLI | `npm run wp-env -- run cli wp <command>` (source) / `npm run wp-env:target -- run cli wp <command>` (target) / `npm run wp-env:test -- run cli wp <command>` (test). Always keep the `--`: without it npm swallows options such as `--user=admin`. |
 | Translations | `npm run makepot` (template) → `composer updatepo` (merge into `.po`) → translate → `npm run makejson` (`.mo` + JS `.json`) |
 | Release zip | `composer install --no-dev -o && npm run build && npm run plugin-zip` |
 

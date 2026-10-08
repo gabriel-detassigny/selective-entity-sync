@@ -730,8 +730,9 @@ The plugin moves content *between* sites, so the dev setup has two WordPress sit
 Commands:
 - **Start / stop both dev sites:** `npm run sites:start` / `npm run sites:stop`.
 - **One site at a time:** `npm run wp-env …` targets the source, `npm run wp-env:target …` the target.
-- **WP-CLI on the target:** `npm run wp-env:target -- run cli wp post list`.
+- **WP-CLI on the target:** `npm run wp-env:target -- run cli wp post list`. Always keep the `--` after the script name: without it, npm swallows options such as `--user=admin` and WP-CLI never sees them.
 - **WP-CLI exports:** WP-CLI runs in `/var/www/html`, which may not be writable, so pass a path under uploads, e.g. `npm run wp-env -- run cli wp selective-entity-sync export --post_ids=12 --file=wp-content/uploads/export.zip`. The file then appears in the site's `wp-content/uploads/` folder.
+- **WP-CLI imports:** `npm run wp-env:target -- run cli wp selective-entity-sync import wp-content/uploads/export.zip --user=admin`. The target has its own uploads folder: copy the zip into it first, or upload it from the admin screen instead.
 - **Empty the target:** `npm run wp-env:target -- run cli wp site empty --uploads --yes`.
 - **Demo content on the target too:** `npm run demo:target`, e.g. to test updates and slug matching against existing content.
 
