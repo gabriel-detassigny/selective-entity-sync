@@ -4,7 +4,7 @@
 
 Selective Entity Sync is a WordPress plugin for moving content changes safely between two WordPress sites, such as staging → production, production → staging, or between two live sites. It doesn't migrate the whole database, or whole tables, which would wipe out the orders, user accounts and form entries created on the target site since your last sync. Instead it exports the exact **entities** you pick (posts, pages, custom post types, terms, media) into a portable manifest, and imports them on the target site, **remapping every database ID** along the way.
 
-> **Status:** first release (0.1.0) in preparation. Try it on a staging copy before relying on it in production.
+> **Status:** first release (0.1.0). Try it on a staging copy before relying on it in production.
 
 ---
 

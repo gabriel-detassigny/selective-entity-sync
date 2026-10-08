@@ -1,6 +1,6 @@
 {
   "name": "selective-entity-sync",
-  "version": "0.1.0-dev",
+  "version": "0.1.0",
   "private": true,
   "description": "Push selected content between WordPress sites (e.g. staging to production) via entity manifests, with automatic ID remapping.",
   "license": "GPL-2.0-or-later",

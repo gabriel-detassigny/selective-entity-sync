@@ -3,7 +3,7 @@
  * Plugin Name:       Selective Entity Sync
  * Plugin URI:        https://github.com/gabriel-detassigny/selective-entity-sync
  * Description:       Push selected content (posts, pages, custom post types, terms and media) from one WordPress site to another (e.g. staging to production) using entity manifests, with automatic ID remapping, so live data is never overwritten.
- * Version:           0.1.0-dev
+ * Version:           0.1.0
  * Requires at least: 6.9
  * Requires PHP:      7.4
  * Author:            Gabriel de Tassigny
@@ -17,7 +17,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
-define( 'SELECTIVE_ENTITY_SYNC_VERSION', '0.1.0-dev' );
+define( 'SELECTIVE_ENTITY_SYNC_VERSION', '0.1.0' );
 define( 'SELECTIVE_ENTITY_SYNC_FILE', __FILE__ );
 define( 'SELECTIVE_ENTITY_SYNC_MIN_PHP', '7.4' );
 define( 'SELECTIVE_ENTITY_SYNC_MIN_WP', '6.9' );
