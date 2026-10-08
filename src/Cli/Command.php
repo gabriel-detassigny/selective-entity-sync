@@ -93,10 +93,23 @@ class Command {
 	 * @return void
 	 */
 	public function export( array $args, array $assoc_args ): void {
-		$post_ids = array_filter( array_map( 'intval', explode( ',', (string) ( $assoc_args['post_ids'] ?? '' ) ) ) );
+		$post_ids    = array_filter( array_map( 'intval', explode( ',', (string) ( $assoc_args['post_ids'] ?? '' ) ) ) );
+		$dry_run     = (bool) WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run', false );
+		$destination = (string) ( $assoc_args['file'] ?? getcwd() . '/selective-entity-sync-export-' . gmdate( 'Ymd-His' ) . '.zip' );
+
+		// Check the destination before exporting anything (exports assign UUIDs on this site).
+		if ( ! $dry_run && ( ! is_dir( dirname( $destination ) ) || ! wp_is_writable( dirname( $destination ) ) ) ) {
+			WP_CLI::error(
+				sprintf(
+					'The folder %s does not exist or is not writable. Choose another location with --file=<path> (with wp-env, for example --file=wp-content/uploads/export.zip).',
+					dirname( $destination )
+				)
+			);
+			return;
+		}
 
 		try {
-			if ( WP_CLI\Utils\get_flag_value( $assoc_args, 'dry-run', false ) ) {
+			if ( $dry_run ) {
 				$this->print_summary( $this->exporter->plan( $post_ids )->get_summary() );
 				return;
 			}
@@ -107,8 +120,7 @@ class Command {
 			return;
 		}
 
-		$destination = (string) ( $assoc_args['file'] ?? getcwd() . '/selective-entity-sync-export-' . gmdate( 'Ymd-His' ) . '.zip' );
-		$copied      = copy( $result->get_package_path(), $destination );
+		$copied = copy( $result->get_package_path(), $destination );
 		$this->storage->delete( $result->get_directory() );
 
 		$this->print_summary( $result->get_plan()->get_summary() );

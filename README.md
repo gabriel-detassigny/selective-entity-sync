@@ -731,6 +731,7 @@ Commands:
 - **Start / stop both dev sites:** `npm run sites:start` / `npm run sites:stop`.
 - **One site at a time:** `npm run wp-env …` targets the source, `npm run wp-env:target …` the target.
 - **WP-CLI on the target:** `npm run wp-env:target -- run cli wp post list`.
+- **WP-CLI exports:** WP-CLI runs in `/var/www/html`, which may not be writable, so pass a path under uploads, e.g. `npm run wp-env -- run cli wp selective-entity-sync export --post_ids=12 --file=wp-content/uploads/export.zip`. The file then appears in the site's `wp-content/uploads/` folder.
 - **Empty the target:** `npm run wp-env:target -- run cli wp site empty --uploads --yes`.
 - **Demo content on the target too:** `npm run demo:target`, e.g. to test updates and slug matching against existing content.
 
