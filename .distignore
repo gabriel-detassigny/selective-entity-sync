@@ -28,7 +28,6 @@ CLAUDE.md
 CHANGELOG.md
 CONTRIBUTING.md
 README.md
-composer.json
 composer.lock
 package.json
 package-lock.json

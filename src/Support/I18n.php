@@ -48,7 +48,8 @@ class I18n implements Hookable {
 	 * @return void
 	 */
 	public function load_textdomain(): void {
-		load_plugin_textdomain( self::TEXT_DOMAIN, false, dirname( plugin_basename( $this->plugin_file ) ) . '/languages' );
+		// Registers the bundled translations (installs from GitHub) as a fallback: WordPress.org language packs win.
+		load_plugin_textdomain( self::TEXT_DOMAIN, false, dirname( plugin_basename( $this->plugin_file ) ) . '/languages' ); // phpcs:ignore PluginCheck.CodeAnalysis.DiscouragedFunctions.load_plugin_textdomainFound -- See above.
 	}
 
 	/**
